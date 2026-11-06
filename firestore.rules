@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// Millennial Gray Clay -- storefront rules.
+//
+// Anyone can READ the site design, the items and the pinned posts: that is
+// the public website. Anyone can CREATE an inquiry, because that is the
+// contact form. Nobody except a signed-in studio account can change the
+// site or read the inquiries.
+//
+// Paste this into Firebase console > Firestore Database > Rules > Publish.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Site design, sections, item types, shipping, pricing rules.
+    match /site/{doc} {
+      allow read:  if true;
+      allow write: if signedIn();
+    }
+
+    // Everything for sale.
+    match /items/{id} {
+      allow read:  if true;
+      allow write: if signedIn();
+    }
+
+    // Pinned social embeds.
+    match /posts/{id} {
+      allow read:  if true;
+      allow write: if signedIn();
+    }
+
+    // Contact / buy inquiries. Visitors may drop one in and nothing else:
+    // they cannot read, edit or delete any of them, including their own.
+    match /inquiries/{id} {
+      allow create: if request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() < 200
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() < 320
+                    && request.resource.data.get('message', '').size() < 5000
+                    && request.resource.data.get('shipping', '').size() < 200
+                    && request.resource.data.get('itemTitle', '').size() < 300;
+      allow read, update, delete: if signedIn();
+    }
+
+    // Anything not named above is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

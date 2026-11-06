@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Art Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&family=DM+Serif+Display&family=Work+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf7f2; --surface:#ffffff; --surface2:#f3ede4; --text:#23201c; --dim:#6f675d;
+  --accent:#9a5b3f; --accent-text:#ffffff; --border:#e2d9cc;
+  --radius:14px; --radius-sm:8px; --btn-radius:999px; --maxw:1120px;
+  --font-head:'Fraunces',Georgia,serif; --font-body:'Inter',system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --gap:28px; --sect-pad:76px;
+  --head-tf:none; --head-ls:0em; --head-style:normal;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body.tx-grain::before,body.tx-dots::before,body.tx-grid::before,body.tx-paper::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0}
+body.tx-dots::before{background-image:radial-gradient(currentColor 1px,transparent 1px);background-size:22px 22px;color:var(--border);opacity:.7}
+body.tx-grid::before{background-image:linear-gradient(currentColor 1px,transparent 1px),linear-gradient(90deg,currentColor 1px,transparent 1px);background-size:44px 44px;color:var(--border);opacity:.45}
+body.tx-grain::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");opacity:.28}
+body.tx-paper::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.04' numOctaves='5'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23p)' opacity='.5'/%3E%3C/svg%3E");opacity:.16}
+#app{position:relative;z-index:1}
+h1,h2,h3,h4{font-family:var(--font-head);font-weight:600;line-height:1.15;margin:0 0 .5em;
+  text-transform:var(--head-tf);letter-spacing:var(--head-ls);font-style:var(--head-style)}
+a{color:inherit}
+img{max-width:100%;display:block}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.btn{font:inherit;font-weight:500;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-text);
+  padding:11px 22px;border-radius:var(--btn-radius);transition:.18s;display:inline-flex;align-items:center;gap:8px;text-decoration:none;line-height:1.2}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--border)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent);filter:none}
+.btn.sm{padding:7px 14px;font-size:13px}
+.btn.danger{background:#b3261e;border-color:#b3261e;color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+header.site{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border)}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:68px}
+.brand{font-family:var(--font-head);font-size:21px;font-weight:600;letter-spacing:var(--head-ls);text-transform:var(--head-tf);margin-right:auto;cursor:pointer}
+.brand small{display:block;font-family:var(--font-body);font-size:11px;font-weight:400;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+nav.site{display:flex;gap:4px;flex-wrap:wrap}
+nav.site button{font:inherit;font-size:14px;background:none;border:0;cursor:pointer;color:var(--dim);padding:8px 13px;border-radius:var(--btn-radius);transition:.15s}
+nav.site button:hover{color:var(--text);background:var(--surface2)}
+nav.site button.on{color:var(--accent-text);background:var(--accent)}
+.navtoggle{display:none;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 11px;cursor:pointer;font-size:17px;color:var(--text)}
+
+section.sect{padding:var(--sect-pad) 0;position:relative}
+.sect-head{max-width:620px;margin-bottom:38px}
+.sect-head h2{font-size:clamp(26px,3.4vw,38px)}
+.sect-head p{color:var(--dim);margin:0;font-size:17px;white-space:pre-wrap}
+.divider{height:1px;background:var(--border);border:0;margin:0}
+.divider.dots{height:auto;background:none;text-align:center;color:var(--border);letter-spacing:1em;font-size:12px}
+.divider.dots::before{content:'...'}
+.divider.wave{height:10px;background:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10'%3E%3Cpath d='M0 5 Q10 0 20 5 T40 5' fill='none' stroke='%23999' stroke-width='1'/%3E%3C/svg%3E");opacity:.4}
+.divider.none{display:none}
+
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center;padding:var(--sect-pad) 0}
+.hero.center{grid-template-columns:1fr;text-align:center;justify-items:center}
+.hero.center .hero-art{display:none}
+.hero h1{font-size:clamp(34px,5.6vw,60px);margin-bottom:18px}
+.hero p{font-size:18px;color:var(--dim);max-width:46ch;margin:0 0 28px;white-space:pre-wrap}
+.hero-art img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--radius);box-shadow:var(--shadow)}
+.hero-art .noimg{width:100%;aspect-ratio:4/5;border-radius:var(--radius);background:var(--surface2);display:grid;place-items:center;color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+.hero.center .hero-cta{justify-content:center}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
+.chip{font:inherit;font-size:13px;background:var(--surface);border:1px solid var(--border);color:var(--dim);padding:7px 15px;border-radius:999px;cursor:pointer;transition:.15s}
+.chip:hover{color:var(--text)}
+.chip.on{background:var(--text);border-color:var(--text);color:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:var(--gap)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:.2s;display:flex;flex-direction:column;text-align:left;font:inherit;color:inherit;padding:0}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.card .ph{aspect-ratio:1/1;background:var(--surface2);position:relative;overflow:hidden}
+.card .ph img{width:100%;height:100%;object-fit:cover}
+.card .ph .noimg{position:absolute;inset:0;display:grid;place-items:center;color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.frame-thin .card .ph img{border:1px solid var(--border)}
+.frame-thick .card .ph{padding:10px;background:var(--surface)}
+.frame-mat .card .ph{padding:22px;background:var(--surface)}
+.frame-mat .card .ph img,.frame-thick .card .ph img{box-shadow:0 2px 10px rgba(0,0,0,.14)}
+.card .body{padding:15px 16px 17px;display:flex;flex-direction:column;gap:5px;flex:1}
+.card h3{font-size:17px;margin:0}
+.card .meta{font-size:12.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em}
+.card .price{margin-top:auto;padding-top:8px;font-weight:600;font-size:15px}
+.badge{display:inline-block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--surface2);color:var(--dim);border:1px solid var(--border)}
+.badge.sold{background:#2b2b2b;color:#fff;border-color:#2b2b2b}
+.badge.reserved{background:#b8862b;color:#fff;border-color:#b8862b}
+.card .ph .corner{position:absolute;top:10px;left:10px;z-index:2}
+.empty{border:1px dashed var(--border);border-radius:var(--radius);padding:52px 24px;text-align:center;color:var(--dim)}
+
+.prose{max-width:68ch;font-size:17px}
+.prose p{margin:0 0 1.1em;white-space:pre-wrap}
+.about{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;align-items:start}
+.about img{border-radius:var(--radius);box-shadow:var(--shadow);aspect-ratio:1/1;object-fit:cover}
+
+.social-links{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:34px}
+.embeds{columns:340px;column-gap:var(--gap)}
+.embed-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:var(--gap);break-inside:avoid;overflow:hidden}
+.embed-card iframe,.embed-card blockquote{max-width:100%!important;margin:0!important}
+.embed-card .cap{font-size:13.5px;color:var(--dim);padding:8px 4px 2px}
+
+label.f{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-weight:500}
+input[type=text],input[type=email],input[type=number],input[type=password],input[type=url],select,textarea{
+  width:100%;font:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--text)}
+textarea{resize:vertical;min-height:96px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.field{margin-bottom:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:620px}
+.note{font-size:13px;color:var(--dim)}
+
+footer.site{border-top:1px solid var(--border);padding:38px 0;margin-top:40px;font-size:14px;color:var(--dim)}
+footer.site .wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+footer.site .sp{margin-left:auto}
+.linkish{background:none;border:0;font:inherit;color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0}
+
+.modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(20,16,12,.55)}
+.modal.open{display:flex}
+.modal-box{background:var(--surface);border-radius:var(--radius);max-width:940px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 24px 70px rgba(0,0,0,.3);position:relative}
+.modal-box.narrow{max-width:460px}
+.x{position:absolute;top:12px;right:12px;z-index:3;background:var(--surface);border:1px solid var(--border);border-radius:999px;width:34px;height:34px;cursor:pointer;font-size:17px;color:var(--text);display:grid;place-items:center}
+.detail{display:grid;grid-template-columns:1.1fr .9fr}
+.detail .shots{background:var(--surface2)}
+.detail .shots img{width:100%;aspect-ratio:1/1;object-fit:cover}
+.detail .shots .noimg{width:100%;aspect-ratio:1/1;display:grid;place-items:center;color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.detail .thumbs{display:flex;gap:8px;padding:10px;flex-wrap:wrap}
+.detail .thumbs img{width:54px;height:54px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid transparent}
+.detail .thumbs img.on{border-color:var(--accent)}
+.detail .info{padding:30px 30px 34px}
+.detail .info h2{font-size:28px;margin-bottom:4px}
+.spec{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14.5px}
+.spec span:first-child{color:var(--dim)}
+.bigprice{font-size:26px;font-weight:600;font-family:var(--font-head);margin:18px 0 6px}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(140%);background:var(--text);color:var(--bg);
+  padding:12px 22px;border-radius:999px;z-index:400;transition:.3s;font-size:14.5px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ================= STUDIO (admin) ================= */
+/* Light scheme. Warm off-white rather than pure white so it sits beside the
+   ceramics palette, and so large panels are not glaring. Terracotta #9a5b3f
+   stays the accent; it carries white text at ~5.4:1. */
+#studio{display:none;position:fixed;inset:0;z-index:300;background:#f7f5f2;color:#26211c;font-family:'Inter',system-ui,sans-serif;font-size:15px;overflow:hidden}
+#studio.open{display:grid;grid-template-columns:232px 1fr}
+#studio *{box-sizing:border-box}
+.sbar{background:#fff;border-right:1px solid #e4ded6;padding:20px 14px;overflow:auto;display:flex;flex-direction:column;gap:3px}
+.sbar .logo{font-family:'Fraunces',serif;font-size:18px;padding:0 10px 16px;color:#1f1b17}
+.sbar .logo small{display:block;font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#766c5f;margin-top:3px}
+.sbar button{text-align:left;background:none;border:0;color:#5f5649;font:inherit;padding:9px 12px;border-radius:8px;cursor:pointer;display:flex;gap:9px;align-items:center}
+.sbar button:hover{background:#f1ece6;color:#1f1b17}
+.sbar button.on{background:#9a5b3f;color:#fff}
+.sbar .sp{margin-top:auto}
+.sbar .mini{font-size:11px;color:#6f6659;padding:10px;line-height:1.5}
+.spane{overflow:auto;padding:30px 34px 70px}
+.spane h2{font-family:'Fraunces',serif;font-size:25px;color:#1f1b17;margin:0 0 4px;text-transform:none;letter-spacing:0}
+.spane .sub{color:#6b6256;margin:0 0 26px;font-size:14px;max-width:70ch}
+.sbox{background:#fff;border:1px solid #e4ded6;border-radius:12px;padding:22px;margin-bottom:20px}
+.sbox h3{font-family:'Inter',sans-serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#6f6659;margin:0 0 16px;font-weight:600}
+#studio label.f{color:#6f6659;font-size:11px}
+#studio input,#studio select,#studio textarea{background:#fff;border-color:#d5cdc3;color:#26211c;font-size:14px}
+#studio input:focus,#studio select:focus,#studio textarea:focus{outline-color:#9a5b3f;border-color:#9a5b3f}
+#studio .btn{border-radius:8px;padding:9px 16px;font-size:14px}
+#studio .btn.ghost{color:#4a4238;border-color:#d5cdc3;background:#fff}
+#studio .btn.ghost:hover{border-color:#9a5b3f;color:#9a5b3f}
+.srow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.swatch{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #d5cdc3;border-radius:8px;padding:6px 10px}
+.swatch input[type=color]{width:30px;height:30px;padding:0;border:0;background:none;cursor:pointer;border-radius:6px}
+.swatch span{font-size:12.5px;color:#5f5649}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{background:#fff;border:1px solid #d5cdc3;color:#5f5649;font:inherit;font-size:13px;padding:7px 13px;border-radius:7px;cursor:pointer}
+.seg button:hover{border-color:#b9ab9a}
+.seg button.on{background:#9a5b3f;border-color:#9a5b3f;color:#fff}
+.plist{display:flex;flex-direction:column;gap:9px}
+.pitem{background:#fff;border:1px solid #e4ded6;border-radius:9px;padding:11px 13px;display:flex;gap:11px;align-items:center}
+.pitem .nm{font-weight:500;color:#26211c}
+.pitem .tg{font-size:11.5px;color:#6f6659}
+.pitem .sp{margin-left:auto;display:flex;gap:6px;align-items:center}
+.iconbtn{background:#f1ece6;border:1px solid #ddd5cb;color:#5f5649;width:30px;height:30px;border-radius:7px;cursor:pointer;display:grid;place-items:center;font-size:13px;padding:0}
+.iconbtn:hover{background:#9a5b3f;color:#fff;border-color:#9a5b3f}
+.iconbtn.del:hover{background:#b3261e;border-color:#b3261e;color:#fff}
+.sw{position:relative;display:inline-block;width:42px;height:23px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw i{position:absolute;inset:0;background:#cfc7bc;border-radius:999px;transition:.2s;cursor:pointer}
+.sw i::after{content:'';position:absolute;width:17px;height:17px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.sw input:checked + i{background:#9a5b3f}
+.sw input:checked + i::after{transform:translateX(19px)}
+.stable{width:100%;border-collapse:collapse;font-size:14px}
+.stable th{text-align:left;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#6f6659;padding:0 10px 9px;font-weight:600}
+.stable td{padding:10px;border-top:1px solid #eae4dc;vertical-align:middle}
+.stable tr:hover td{background:#faf8f5}
+.stable img.th{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#eee9e2}
+.calc-out{background:#faf8f5;border:1px solid #e4ded6;border-radius:10px;padding:18px}
+.cline{display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:14px;color:#5f5649}
+.cline b{color:#26211c;font-weight:500}
+.cline.total{border-top:1px solid #ddd5cb;margin-top:8px;padding-top:12px;font-size:17px;color:#1f1b17}
+.cline.total b{font-size:23px;font-family:'Fraunces',serif;color:#9a5b3f}
+.cline.pos b{color:#1f7a4d}
+.cline.neg b{color:#b3261e}
+.hint{font-size:12.5px;color:#6f6659;margin-top:7px;line-height:1.5}
+.savebar{position:fixed;bottom:0;left:232px;right:0;background:#fff;border-top:1px solid #e4ded6;padding:12px 34px;display:flex;align-items:center;gap:14px;z-index:5;box-shadow:0 -4px 16px rgba(38,33,28,.06)}
+.savebar .st{font-size:13px;color:#6f6659;margin-right:auto}
+.banner{background:#fdf6e7;border:1px solid #e3cf9f;color:#6b4a1f;border-radius:10px;padding:13px 16px;font-size:13.5px;margin-bottom:20px;line-height:1.55}
+.banner b{color:#3f2c10}
+.banner code{background:#f3e7cb;padding:1px 5px;border-radius:4px;font-size:12.5px}
+.dz{border:1.5px dashed #cfc6ba;border-radius:10px;padding:20px;text-align:center;color:#6b6256;cursor:pointer;font-size:13.5px;background:#fff}
+.dz:hover{border-color:#9a5b3f;color:#9a5b3f;background:#fdfbf9}
+.thumbs-admin{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.thumbs-admin .t{position:relative;width:70px;height:70px}
+.thumbs-admin img{width:70px;height:70px;object-fit:cover;border-radius:8px;background:#eee9e2}
+.thumbs-admin .rm{position:absolute;top:-6px;right:-6px;width:21px;height:21px;border-radius:50%;background:#b3261e;color:#fff;border:0;cursor:pointer;font-size:12px;line-height:1;padding:0}
+.thumbs-admin .t.first::after{content:'cover';position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.65);color:#fff;font-size:9px;text-align:center;letter-spacing:.08em;text-transform:uppercase;border-radius:0 0 8px 8px}
+@media(max-width:900px){
+  #studio.open{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .sbar{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid #e4ded6;padding:10px}
+  .sbar .logo,.sbar .mini{display:none}
+  .sbar .sp{margin-left:auto;margin-top:0}
+  .sbar button{white-space:nowrap}
+  .savebar{left:0}
+  .spane{padding:20px 18px 90px}
+}
+@media(max-width:860px){
+  .hero,.about,.detail{grid-template-columns:1fr}
+  .hero{gap:32px}
+  .row2,.row3{grid-template-columns:1fr}
+  nav.site{display:none;position:absolute;top:68px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;flex-direction:column}
+  nav.site.open{display:flex}
+  .navtoggle{display:block}
+  header.site .wrap{position:relative}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="site">
+    <div class="wrap">
+      <div class="brand" id="brand" onclick="go(firstSectionId())"></div>
+      <button class="navtoggle" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <nav class="site" id="nav"></nav>
+    </div>
+  </header>
+  <main id="main"></main>
+  <footer class="site">
+    <div class="wrap">
+      <span id="footText"></span>
+      <span class="sp"></span>
+      <button class="linkish" onclick="openStudio()">Studio</button>
+    </div>
+  </footer>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modalBox"></div>
+</div>
+
+<div id="studio">
+  <aside class="sbar" id="sbar"></aside>
+  <div class="spane" id="spane"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* =======================================================================
+   1. FIREBASE CONFIG  --  paste your own project's config between the { }
+   Firebase console > Project settings > Your apps > Web app > SDK setup
+   Leave it empty and the site runs in local preview mode on this browser.
+   ======================================================================= */
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyC2skjqungexAgY4lMbpoa_6M4chZQSmbw",
+  authDomain:        "millennial-gray-clay.firebaseapp.com",
+  projectId:         "millennial-gray-clay",
+  storageBucket:     "millennial-gray-clay.firebasestorage.app",
+  messagingSenderId: "889668258134",
+  appId:             "1:889668258134:web:1e17ca59df9b56761e2ef7"
+};
+// Left out on purpose: databaseURL (that is Realtime Database, a different
+// product -- this site uses Firestore) and measurementId (Analytics, whose
+// SDK this page does not load). Adding them back would change nothing.
+
+/* =======================================================================
+   2. DEFAULTS  --  the starting shape of the whole site.
+   Everything here is editable from Studio; this is only the first draft.
+   ======================================================================= */
+const DEFAULTS = {
+  theme: {
+    bg:"#f6f4f1", surface:"#ffffff", surface2:"#eceae6", text:"#26262b", dim:"#6e6e76",
+    accent:"#8b8d86", accentText:"#ffffff", border:"#dcdad5",
+    fontHead:"Fraunces", fontBody:"Inter",
+    headStyle:"normal", radius:14, btnShape:"pill", texture:"none",
+    divider:"line", frame:"none", density:"comfortable", heroLayout:"split", width:1120
+  },
+  content: {
+    siteName:"Millennial Gray Clay", tagline:"Handmade ceramics & art",
+    footer:"Millennial Gray Clay -- made by hand, one at a time.",
+    currency:"$"
+  },
+  sections: [
+    { id:"home",    kind:"hero",    label:"Home",    visible:true, inNav:true,
+      h:"Millennial Gray Clay", sub:"Small-batch ceramics and original work, made slowly by hand in my studio.",
+      img:"", cta:"Shop the collection", ctaTarget:"shop", cta2:"About the maker", cta2Target:"about" },
+    { id:"shop",    kind:"shop",    label:"Shop",    visible:true, inNav:true,
+      h:"The collection", sub:"Each piece is one of a kind. When it's gone, it's gone.",
+      showSold:true, showFilters:true },
+    { id:"about",   kind:"about",   label:"About",   visible:true, inNav:true,
+      h:"About", sub:"", img:"",
+      body:"I'm a maker working in clay and mixed media.\n\nEvery piece here was made by hand in small batches -- which means slight variations in glaze, texture and form are part of the deal, not a flaw.\n\nReplace this text in Studio > Sections > About." },
+    { id:"socials", kind:"socials", label:"Socials", visible:true, inNav:true,
+      h:"From the studio", sub:"Latest posts, work in progress and new drops." },
+    { id:"contact", kind:"contact", label:"Contact", visible:true, inNav:true,
+      h:"Get in touch", sub:"Questions, commissions, or wholesale -- send me a note.",
+      body:"I usually reply within a day or two." }
+  ],
+  itemTypes: [
+    { id:"t_ceramic", name:"Ceramics", fields:[
+        {key:"dimensions", label:"Dimensions"},
+        {key:"materials",  label:"Clay & glaze"},
+        {key:"care",       label:"Care"} ] },
+    { id:"t_original", name:"Original art", fields:[
+        {key:"dimensions", label:"Size"},
+        {key:"medium",     label:"Medium"},
+        {key:"year",       label:"Year"} ] },
+    { id:"t_print", name:"Prints", fields:[
+        {key:"dimensions", label:"Paper size"},
+        {key:"edition",    label:"Edition"},
+        {key:"paper",      label:"Paper"} ] }
+  ],
+  socials: {
+    links:[ {label:"Instagram", url:""}, {label:"TikTok", url:""} ],
+    note:""
+  },
+  shipping: {
+    packaging:3.50, freeOver:0, localPickup:true, pickupNote:"Local pickup available -- ask when you inquire.",
+    methods:[
+      { id:"m1", name:"Standard (3-5 days)", price:9.00,  note:"Tracked, packed in recycled materials" },
+      { id:"m2", name:"Express (1-2 days)",  price:22.00, note:"" },
+      { id:"m3", name:"Oversized / fragile", price:38.00, note:"Large or multi-piece orders" }
+    ]
+  },
+  pricing: {
+    hourlyRate:25, overheadPct:12, feePct:3, marginPct:40, roundTo:5, includePackaging:true
+  }
+};
+
+/* =======================================================================
+   3. UTIL
+   ======================================================================= */
+const $  = s => document.querySelector(s);
+const el = (t,p={}) => Object.assign(document.createElement(t),p);
+const uid = p => p + Math.random().toString(36).slice(2,9);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const clone = o => JSON.parse(JSON.stringify(o));
+function money(n){ const c = (state.settings.content && state.settings.content.currency) || "$";
+  return c + num(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+let toastT;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2600); }
+function deepMerge(base, over){
+  if (over === undefined || over === null) return clone(base);
+  if (Array.isArray(base)) return Array.isArray(over) ? clone(over) : clone(base);
+  if (typeof base !== "object") return over;
+  const out = clone(base);
+  for (const k in over) out[k] = (k in base) ? deepMerge(base[k], over[k]) : clone(over[k]);
+  return out;
+}
+
+/* =======================================================================
+   4. STATE + STORAGE
+   Two interchangeable backends: Firestore (live, shared) and
+   localStorage (preview on this browser only, used when config is blank).
+   ======================================================================= */
+const state = {
+  settings: clone(DEFAULTS),
+  items: [], posts: [], inquiries: [],
+  view: "home", filter: "all",
+  mode: "local", user: null, ready: false,
+  studioTab: "look", editing: null, dirty: false
+};
+
+const LS = "mgc_site_v1";
+let lsMemo = null, lsWarned = false;   // fallback when storage is unavailable
+function lsRead(){
+  if (lsMemo) return lsMemo;
+  try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch(e){ return lsMemo || {}; }
+}
+function lsWrite(patch){
+  const next = Object.assign(lsRead(), patch);
+  try { localStorage.setItem(LS, JSON.stringify(next)); lsMemo = null; }
+  catch(e){
+    // Private browsing, a data: URL, or a full disk. Keep going in memory so
+    // nothing is lost mid-edit, but be honest that it will not survive reload.
+    lsMemo = next;
+    if (!lsWarned){ lsWarned = true; toast("This browser is blocking local storage -- changes will be lost on reload"); }
+  }
+}
+
+const cloudConfigured = () => !!FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith("PASTE_");
+
+let db = null, auth = null;
+
+const store = {
+  async init(){
+    if (!cloudConfigured()){ state.mode = "local"; return this.initLocal(); }
+    try {
+      firebase.initializeApp(FIREBASE_CONFIG);
+      db = firebase.firestore(); auth = firebase.auth();
+      state.mode = "cloud";
+      auth.onAuthStateChanged(u => { state.user = u; if (studioOpen()) renderStudio(); });
+      db.collection("site").doc("settings").onSnapshot(d => {
+        state.settings = d.exists ? deepMerge(DEFAULTS, d.data()) : clone(DEFAULTS);
+        applyTheme(); renderSite(); if (studioOpen()) renderStudio();
+      }, e => cloudError(e));
+      db.collection("items").onSnapshot(s => {
+        state.items = s.docs.map(d => Object.assign({ id:d.id }, d.data()))
+                            .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+        renderSite(); if (studioOpen()) renderStudio();
+      }, e => cloudError(e));
+      db.collection("posts").onSnapshot(s => {
+        state.posts = s.docs.map(d => Object.assign({ id:d.id }, d.data()))
+                            .sort((a,b)=>(a.order||0)-(b.order||0));
+        renderSite(); if (studioOpen()) renderStudio();
+      }, e => cloudError(e));
+      db.collection("inquiries").onSnapshot(s => {
+        state.inquiries = s.docs.map(d => Object.assign({ id:d.id }, d.data()))
+                                .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+        if (studioOpen()) renderStudio();
+      }, () => {});
+    } catch(e){ console.error(e); state.mode="local"; this.initLocal(); toast("Cloud unavailable -- using local preview"); }
+  },
+  initLocal(){
+    const d = lsRead();
+    state.settings  = deepMerge(DEFAULTS, d.settings);
+    state.items     = d.items     || [];
+    state.posts     = d.posts     || [];
+    state.inquiries = d.inquiries || [];
+  },
+  async saveSettings(){
+    if (state.mode === "cloud") await db.collection("site").doc("settings").set(state.settings);
+    else { lsWrite({ settings: state.settings }); applyTheme(); renderSite(); }
+  },
+  async saveItem(it){
+    if (!it.id) it.id = uid("i_");
+    if (!it.createdAt) it.createdAt = Date.now();
+    if (state.mode === "cloud"){
+      const { id, ...rest } = it;
+      await db.collection("items").doc(id).set(rest);
+    } else {
+      const i = state.items.findIndex(x => x.id === it.id);
+      if (i >= 0) state.items[i] = it; else state.items.unshift(it);
+      lsWrite({ items: state.items }); renderSite();
+    }
+  },
+  async delItem(id){
+    if (state.mode === "cloud") await db.collection("items").doc(id).delete();
+    else { state.items = state.items.filter(x => x.id !== id); lsWrite({ items: state.items }); renderSite(); }
+  },
+  async savePost(p){
+    if (!p.id) p.id = uid("p_");
+    if (p.order == null) p.order = state.posts.length;
+    if (state.mode === "cloud"){ const { id, ...rest } = p; await db.collection("posts").doc(id).set(rest); }
+    else {
+      const i = state.posts.findIndex(x => x.id === p.id);
+      if (i >= 0) state.posts[i] = p; else state.posts.push(p);
+      lsWrite({ posts: state.posts }); renderSite();
+    }
+  },
+  async delPost(id){
+    if (state.mode === "cloud") await db.collection("posts").doc(id).delete();
+    else { state.posts = state.posts.filter(x => x.id !== id); lsWrite({ posts: state.posts }); renderSite(); }
+  },
+  async addInquiry(q){
+    q.createdAt = Date.now(); q.status = "new";
+    if (state.mode === "cloud") await db.collection("inquiries").add(q);
+    else { q.id = uid("q_"); state.inquiries.unshift(q); lsWrite({ inquiries: state.inquiries }); }
+  },
+  async delInquiry(id){
+    if (state.mode === "cloud") await db.collection("inquiries").doc(id).delete();
+    else { state.inquiries = state.inquiries.filter(x => x.id !== id); lsWrite({ inquiries: state.inquiries }); }
+  }
+};
+function cloudError(e){
+  console.error(e);
+  if (e && e.code === "permission-denied") toast("Firestore rules are blocking reads -- see SETUP.md step 3");
+  else toast("Cloud read failed: " + (e.message || e.code || "unknown"));
+}
+
+/* =======================================================================
+   5. THEME
+   ======================================================================= */
+const FONTS = {
+  "Fraunces":"'Fraunces',Georgia,serif", "Cormorant Garamond":"'Cormorant Garamond',Georgia,serif",
+  "DM Serif Display":"'DM Serif Display',Georgia,serif", "Playfair Display":"'Playfair Display',Georgia,serif",
+  "Inter":"'Inter',system-ui,sans-serif", "Work Sans":"'Work Sans',system-ui,sans-serif",
+  "Space Grotesk":"'Space Grotesk',system-ui,sans-serif", "Caveat":"'Caveat',cursive"
+};
+const DENSITY = { cozy:[56,20], comfortable:[76,28], airy:[108,40] };
+
+function applyTheme(){
+  const t = state.settings.theme, r = document.documentElement.style;
+  r.setProperty("--bg",t.bg); r.setProperty("--surface",t.surface); r.setProperty("--surface2",t.surface2);
+  r.setProperty("--text",t.text); r.setProperty("--dim",t.dim); r.setProperty("--accent",t.accent);
+  r.setProperty("--accent-text",t.accentText); r.setProperty("--border",t.border);
+  r.setProperty("--radius", t.radius + "px");
+  r.setProperty("--radius-sm", Math.max(4, Math.round(t.radius * 0.55)) + "px");
+  r.setProperty("--btn-radius", t.btnShape === "pill" ? "999px" : t.btnShape === "square" ? "0px" : "8px");
+  r.setProperty("--maxw", t.width + "px");
+  r.setProperty("--font-head", FONTS[t.fontHead] || FONTS.Fraunces);
+  r.setProperty("--font-body", FONTS[t.fontBody] || FONTS.Inter);
+  const hs = { normal:["none","0em","normal"], tracked:["uppercase",".14em","normal"],
+               italic:["none","0em","italic"], upper:["uppercase","0em","normal"] }[t.headStyle] || ["none","0em","normal"];
+  r.setProperty("--head-tf",hs[0]); r.setProperty("--head-ls",hs[1]); r.setProperty("--head-style",hs[2]);
+  const d = DENSITY[t.density] || DENSITY.comfortable;
+  r.setProperty("--sect-pad", d[0] + "px"); r.setProperty("--gap", d[1] + "px");
+  document.body.className = "tx-" + t.texture + " frame-" + t.frame;
+  document.title = state.settings.content.siteName || "Art Shop";
+}
+
+/* =======================================================================
+   6. STOREFRONT
+   ======================================================================= */
+const visibleSections = () => state.settings.sections.filter(s => s.visible);
+function firstSectionId(){ const v = visibleSections(); return v.length ? v[0].id : "home"; }
+function typeName(id){ const t = state.settings.itemTypes.find(t => t.id === id); return t ? t.name : ""; }
+function typeFields(id){ const t = state.settings.itemTypes.find(t => t.id === id); return t ? t.fields : []; }
+
+function go(id){
+  state.view = id;
+  document.getElementById("nav").classList.remove("open");
+  renderSite();
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+
+function renderSite(){
+  const c = state.settings.content;
+  $("#brand").innerHTML = esc(c.siteName) + (c.tagline ? "<small>" + esc(c.tagline) + "</small>" : "");
+  $("#footText").textContent = c.footer || "";
+
+  const secs = visibleSections();
+  if (!secs.some(s => s.id === state.view)) state.view = firstSectionId();
+  $("#nav").innerHTML = secs.filter(s => s.inNav).map(s =>
+    '<button class="' + (s.id === state.view ? "on" : "") + '" onclick="go(\'' + s.id + '\')">' + esc(s.label) + '</button>'
+  ).join("");
+
+  const s = secs.find(x => x.id === state.view);
+  $("#main").innerHTML = s ? renderSection(s) : '<div class="wrap"><div class="empty">No sections are visible yet. Open Studio to add one.</div></div>';
+  if (s && s.kind === "socials") hydrateEmbeds();
+}
+
+function renderSection(s){
+  const dv = state.settings.theme.divider;
+  const head = (s.h || s.sub)
+    ? '<div class="sect-head"><h2>' + esc(s.h) + '</h2>' + (s.sub ? '<p>' + esc(s.sub) + '</p>' : '') + '</div>' : '';
+  const body = {
+    hero:    () => renderHero(s),
+    shop:    () => '<section class="sect"><div class="wrap">' + head + renderShop(s) + '</div></section>',
+    about:   () => '<section class="sect"><div class="wrap">' + head + renderAbout(s) + '</div></section>',
+    socials: () => '<section class="sect"><div class="wrap">' + head + renderSocials(s) + '</div></section>',
+    contact: () => '<section class="sect"><div class="wrap">' + head + renderContact(s) + '</div></section>',
+    text:    () => '<section class="sect"><div class="wrap">' + head +
+                   '<div class="prose">' + (s.body || "").split("\n\n").map(p => '<p>' + esc(p) + '</p>').join("") + '</div></div></section>',
+    gallery: () => '<section class="sect"><div class="wrap">' + head + renderGallery(s) + '</div></section>'
+  }[s.kind];
+  return (body ? body() : '') + '<hr class="divider ' + dv + '">';
+}
+
+function renderHero(s){
+  const t = state.settings.theme;
+  const art = s.img
+    ? '<div class="hero-art"><img src="' + esc(s.img) + '" alt=""></div>'
+    : '<div class="hero-art"><div class="noimg">Add a hero image in Studio</div></div>';
+  const btn = (label, target, ghost) => label
+    ? '<button class="btn' + (ghost ? ' ghost' : '') + '" onclick="go(\'' + esc(target || 'shop') + '\')">' + esc(label) + '</button>' : '';
+  return '<div class="wrap"><div class="hero ' + (t.heroLayout === "center" ? "center" : "") + '">' +
+    '<div><h1>' + esc(s.h) + '</h1>' + (s.sub ? '<p>' + esc(s.sub) + '</p>' : '') +
+    '<div class="hero-cta">' + btn(s.cta, s.ctaTarget, false) + btn(s.cta2, s.cta2Target, true) + '</div></div>' +
+    art + '</div></div>';
+}
+
+function shopItems(s){
+  let list = state.items.filter(i => i.published !== false);
+  if (!s.showSold) list = list.filter(i => i.status !== "sold");
+  if (state.filter !== "all") list = list.filter(i => i.typeId === state.filter);
+  return list;
+}
+
+function renderShop(s){
+  const types = state.settings.itemTypes.filter(t => state.items.some(i => i.typeId === t.id && i.published !== false));
+  const filters = (s.showFilters && types.length > 1)
+    ? '<div class="filters"><button class="chip ' + (state.filter === "all" ? "on" : "") + '" onclick="setFilter(\'all\')">Everything</button>' +
+      types.map(t => '<button class="chip ' + (state.filter === t.id ? "on" : "") + '" onclick="setFilter(\'' + t.id + '\')">' + esc(t.name) + '</button>').join("") +
+      '</div>' : '';
+  const list = shopItems(s);
+  if (!list.length) return filters + '<div class="empty">Nothing here yet. Open <b>Studio &rsaquo; Items</b> to add your first piece.</div>';
+  return filters + '<div class="grid">' + list.map(cardHTML).join("") + '</div>';
+}
+function setFilter(f){ state.filter = f; renderSite(); }
+
+function cardHTML(i){
+  const img = (i.images && i.images[0])
+    ? '<img src="' + esc(i.images[0]) + '" alt="' + esc(i.title) + '" loading="lazy">'
+    : '<div class="noimg">No photo</div>';
+  const badge = i.status && i.status !== "available"
+    ? '<span class="badge ' + esc(i.status) + ' corner">' + esc(i.status) + '</span>' : '';
+  const price = i.status === "sold" ? "Sold" : (num(i.price) > 0 ? money(i.price) : "Inquire");
+  return '<button class="card" onclick="openItem(\'' + i.id + '\')">' +
+    '<div class="ph">' + badge + img + '</div>' +
+    '<div class="body"><h3>' + esc(i.title) + '</h3>' +
+    (i.typeId ? '<div class="meta">' + esc(typeName(i.typeId)) + '</div>' : '') +
+    '<div class="price">' + price + '</div></div></button>';
+}
+
+function renderAbout(s){
+  const txt = '<div class="prose">' + (s.body || "").split("\n\n").map(p => '<p>' + esc(p) + '</p>').join("") + '</div>';
+  return s.img
+    ? '<div class="about"><img src="' + esc(s.img) + '" alt="">' + txt + '</div>'
+    : txt;
+}
+
+function renderGallery(s){
+  const imgs = (s.images || []);
+  if (!imgs.length) return '<div class="empty">Add images to this gallery in Studio.</div>';
+  return '<div class="grid">' + imgs.map(u =>
+    '<div class="card" style="cursor:default"><div class="ph"><img src="' + esc(u) + '" alt="" loading="lazy"></div></div>').join("") + '</div>';
+}
+
+function renderSocials(s){
+  const so = state.settings.socials;
+  const links = (so.links || []).filter(l => l.url).map(l =>
+    '<a class="btn ghost" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' + esc(l.label) + '</a>').join("");
+  const note = so.note ? '<p class="note" style="margin:0 0 26px">' + esc(so.note) + '</p>' : '';
+  const posts = state.posts.filter(p => p.visible !== false);
+  const feed = posts.length
+    ? '<div class="embeds" id="embeds">' + posts.map(p =>
+        '<div class="embed-card">' + (p.embed || "") + (p.caption ? '<div class="cap">' + esc(p.caption) + '</div>' : '') + '</div>').join("") + '</div>'
+    : '<div class="empty">No posts pinned yet. Paste a post embed code in <b>Studio &rsaquo; Socials</b>.</div>';
+  return (links ? '<div class="social-links">' + links + '</div>' : '') + note + feed;
+}
+
+/* Re-runs the platform scripts that embed codes rely on. */
+function hydrateEmbeds(){
+  const host = document.getElementById("embeds");
+  if (!host) return;
+  const srcs = new Set();
+  host.querySelectorAll("script").forEach(old => {
+    const sc = document.createElement("script");
+    if (old.src){ if (srcs.has(old.src)) { old.remove(); return; } srcs.add(old.src); sc.src = old.src; sc.async = true; }
+    else sc.textContent = old.textContent;
+    old.replaceWith(sc);
+  });
+  setTimeout(() => {
+    try { if (window.instgrm) window.instgrm.Embeds.process(); } catch(e){}
+    try { if (window.twttr && window.twttr.widgets) window.twttr.widgets.load(host); } catch(e){}
+  }, 400);
+}
+
+/* ---------- item detail + inquiry ---------- */
+function openModal(html, narrow){
+  const b = $("#modalBox");
+  b.className = "modal-box" + (narrow ? " narrow" : "");
+  b.innerHTML = '<button class="x" onclick="closeModal()">&times;</button>' + html;
+  $("#modal").classList.add("open");
+}
+function closeModal(){ $("#modal").classList.remove("open"); }
+
+function openItem(id){
+  const i = state.items.find(x => x.id === id); if (!i) return;
+  const imgs = i.images || [];
+  const shots = '<div class="shots">' +
+    (imgs.length ? '<img id="shotMain" src="' + esc(imgs[0]) + '" alt="' + esc(i.title) + '">' : '<div class="noimg">No photo</div>') +
+    (imgs.length > 1 ? '<div class="thumbs">' + imgs.map((u, n) =>
+      '<img src="' + esc(u) + '" class="' + (n === 0 ? "on" : "") + '" onclick="swapShot(this,\'' + esc(u) + '\')">').join("") + '</div>' : '') +
+    '</div>';
+  const specs = typeFields(i.typeId).filter(f => i.fields && i.fields[f.key])
+    .map(f => '<div class="spec"><span>' + esc(f.label) + '</span><span>' + esc(i.fields[f.key]) + '</span></div>').join("");
+  const sh = state.settings.shipping;
+  const shipLine = num(sh.freeOver) > 0 && num(i.price) >= num(sh.freeOver)
+    ? "Free shipping on this piece"
+    : (sh.methods && sh.methods[0] ? "Shipping from " + money(sh.methods[0].price) : "");
+  const sold = i.status === "sold";
+  const info = '<div class="info">' +
+    (i.status && i.status !== "available" ? '<span class="badge ' + esc(i.status) + '">' + esc(i.status) + '</span>' : '') +
+    '<h2>' + esc(i.title) + '</h2>' +
+    (i.typeId ? '<div class="meta" style="color:var(--dim);font-size:13px;letter-spacing:.07em;text-transform:uppercase">' + esc(typeName(i.typeId)) + '</div>' : '') +
+    '<div class="bigprice">' + (sold ? "Sold" : (num(i.price) > 0 ? money(i.price) : "Price on request")) + '</div>' +
+    (shipLine && !sold ? '<div class="note" style="margin-bottom:14px">' + esc(shipLine) + '</div>' : '') +
+    (i.description ? '<div class="prose" style="font-size:15.5px">' + i.description.split("\n\n").map(p => '<p>' + esc(p) + '</p>').join("") + '</div>' : '') +
+    (specs ? '<div style="margin:18px 0">' + specs + '</div>' : '') +
+    (sold
+      ? '<button class="btn ghost" onclick="openInquiry(\'' + i.id + '\')">Ask about something similar</button>'
+      : '<button class="btn" onclick="openInquiry(\'' + i.id + '\')">Inquire to buy</button>') +
+    (sh.localPickup && sh.pickupNote ? '<p class="note" style="margin-top:14px">' + esc(sh.pickupNote) + '</p>' : '') +
+    '</div>';
+  openModal('<div class="detail">' + shots + info + '</div>');
+}
+function swapShot(th, url){
+  const m = document.getElementById("shotMain"); if (m) m.src = url;
+  th.parentNode.querySelectorAll("img").forEach(x => x.classList.remove("on"));
+  th.classList.add("on");
+}
+
+function openInquiry(itemId){
+  const i = itemId ? state.items.find(x => x.id === itemId) : null;
+  const sh = state.settings.shipping;
+  const opts = (sh.methods || []).map(m =>
+    '<option value="' + esc(m.name) + '">' + esc(m.name) + " -- " + money(m.price) + '</option>').join("") +
+    (sh.localPickup ? '<option value="Local pickup">Local pickup -- free</option>' : '');
+  openModal('<div style="padding:30px">' +
+    '<h2 style="margin-bottom:4px">' + (i ? "Inquire: " + esc(i.title) : "Get in touch") + '</h2>' +
+    '<p class="note" style="margin-bottom:22px">Send this and I\'ll get back to you with payment details.</p>' +
+    '<form onsubmit="submitInquiry(event,\'' + esc(itemId || "") + '\')">' +
+    '<div class="row2"><div class="field"><label class="f">Your name</label><input name="name" required></div>' +
+    '<div class="field"><label class="f">Email</label><input type="email" name="email" required></div></div>' +
+    '<div class="field"><label class="f">Delivery</label><select name="shipping">' + opts + '</select></div>' +
+    '<div class="field"><label class="f">Message</label><textarea name="message" placeholder="' +
+      (i ? "Anything you want to ask about this piece..." : "What are you after?") + '"></textarea></div>' +
+    '<button class="btn" type="submit">Send inquiry</button></form></div>', true);
+}
+
+async function submitInquiry(e, itemId){
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const btn = e.target.querySelector("button[type=submit]");
+  btn.disabled = true; btn.textContent = "Sending...";
+  const it = itemId ? state.items.find(x => x.id === itemId) : null;
+  try {
+    await store.addInquiry({
+      name: f.get("name"), email: f.get("email"),
+      shipping: f.get("shipping") || "", message: f.get("message") || "",
+      itemId: itemId || "", itemTitle: it ? it.title : "", itemPrice: it ? num(it.price) : 0
+    });
+    openModal('<div style="padding:46px 34px;text-align:center">' +
+      '<h2>Thank you</h2><p class="note">Your inquiry is in. I\'ll reply to ' + esc(f.get("email")) + ' shortly.</p>' +
+      '<button class="btn ghost" style="margin-top:18px" onclick="closeModal()">Close</button></div>', true);
+  } catch(err){
+    console.error(err);
+    btn.disabled = false; btn.textContent = "Send inquiry";
+    toast("Could not send -- " + (err.message || "check your connection"));
+  }
+}
+
+function renderContact(s){
+  const sh = state.settings.shipping;
+  const opts = (sh.methods || []).map(m =>
+    '<option value="' + esc(m.name) + '">' + esc(m.name) + " -- " + money(m.price) + '</option>').join("") +
+    (sh.localPickup ? '<option value="Local pickup">Local pickup -- free</option>' : '');
+  return '<div class="form-card">' + (s.body ? '<p class="note" style="margin-top:0">' + esc(s.body) + '</p>' : '') +
+    '<form onsubmit="submitInquiry(event,\'\')">' +
+    '<div class="row2"><div class="field"><label class="f">Your name</label><input name="name" required></div>' +
+    '<div class="field"><label class="f">Email</label><input type="email" name="email" required></div></div>' +
+    '<div class="field"><label class="f">Delivery preference</label><select name="shipping">' + opts + '</select></div>' +
+    '<div class="field"><label class="f">Message</label><textarea name="message" required></textarea></div>' +
+    '<button class="btn" type="submit">Send</button></form></div>';
+}
+
+/* =======================================================================
+   7. STUDIO  --  the part only you see
+   ======================================================================= */
+const studioOpen = () => $("#studio").classList.contains("open");
+
+function openStudio(){
+  if (state.mode === "cloud" && !state.user) return loginPrompt();
+  $("#studio").classList.add("open");
+  document.body.style.overflow = "hidden";
+  renderStudio();
+}
+function closeStudio(){
+  $("#studio").classList.remove("open");
+  document.body.style.overflow = "";
+  renderSite();
+}
+function loginPrompt(){
+  openModal('<div style="padding:30px">' +
+    '<h2 style="margin-bottom:4px">Studio sign in</h2>' +
+    '<p class="note" style="margin-bottom:22px">Use the email and password you created in the Firebase console.</p>' +
+    '<form onsubmit="doLogin(event)">' +
+    '<div class="field"><label class="f">Email</label><input type="email" name="email" required autocomplete="username"></div>' +
+    '<div class="field"><label class="f">Password</label><input type="password" name="password" required autocomplete="current-password"></div>' +
+    '<button class="btn" type="submit">Sign in</button></form></div>', true);
+}
+async function doLogin(e){
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const btn = e.target.querySelector("button");
+  btn.disabled = true; btn.textContent = "Signing in...";
+  try {
+    await auth.signInWithEmailAndPassword(f.get("email"), f.get("password"));
+    closeModal(); openStudio();
+  } catch(err){
+    btn.disabled = false; btn.textContent = "Sign in";
+    toast(err.code === "auth/invalid-credential" ? "Wrong email or password" : (err.message || "Sign in failed"));
+  }
+}
+async function doLogout(){ await auth.signOut(); closeStudio(); toast("Signed out"); }
+
+const TABS = [
+  ["look",     "Look &amp; feel"],
+  ["sections", "Sections"],
+  ["items",    "Items"],
+  ["types",    "Item types"],
+  ["calc",     "Price calculator"],
+  ["shipping", "Shipping"],
+  ["socials",  "Socials"],
+  ["inbox",    "Inquiries"],
+  ["setup",    "Setup"]
+];
+
+function dirty(v){
+  state.dirty = v;
+  const b = document.querySelector(".savebar .st");
+  if (b) b.textContent = v ? "Unsaved changes" : (state.mode === "cloud" ? "All changes saved" : "Saved to this browser");
+  const s = document.getElementById("saveBtn");
+  if (s) s.disabled = !v;
+}
+
+function renderStudio(){
+  const n = state.inquiries.filter(q => q.status === "new").length;
+  $("#sbar").innerHTML =
+    '<div class="logo">' + esc(state.settings.content.siteName) + '<small>Studio</small></div>' +
+    TABS.map(t => '<button class="' + (state.studioTab === t[0] ? "on" : "") + '" onclick="studioTab(\'' + t[0] + '\')">' +
+      t[1] + (t[0] === "inbox" && n ? ' <span class="badge" style="background:#9a5b3f;color:#fff;border:0">' + n + '</span>' : '') +
+      '</button>').join("") +
+    '<div class="sp"></div>' +
+    '<button onclick="closeStudio()">&larr; View site</button>' +
+    (state.mode === "cloud" && state.user ? '<button onclick="doLogout()">Sign out</button>' : '') +
+    '<div class="mini">' + (state.mode === "cloud"
+      ? "Live on Firebase<br>" + esc((state.user && state.user.email) || "")
+      : "Local preview only -- changes stay in this browser") + '</div>';
+
+  const body = {
+    look:     tabLook, sections: tabSections, items: tabItems, types: tabTypes,
+    calc:     tabCalc, shipping: tabShipping, socials: tabSocials, inbox: tabInbox, setup: tabSetup
+  }[state.studioTab];
+  $("#spane").innerHTML = (state.mode === "local" ? localBanner() : "") + (body ? body() : "") +
+    '<div class="savebar"><span class="st">' + (state.dirty ? "Unsaved changes" :
+      (state.mode === "cloud" ? "All changes saved" : "Saved to this browser")) + '</span>' +
+    '<button class="btn ghost" onclick="revertSettings()">Discard</button>' +
+    '<button class="btn" id="saveBtn" onclick="saveSettings()"' + (state.dirty ? "" : " disabled") + '>Save changes</button></div>';
+}
+function studioTab(t){ state.studioTab = t; renderStudio(); $("#spane").scrollTop = 0; }
+
+function localBanner(){
+  return '<div class="banner"><b>Local preview mode.</b> Your Firebase project is <code>millennial-gray-clay</code>, ' +
+    'but the API key is still a placeholder, so nothing is saving to the cloud yet. ' +
+    'Open <code>index.html</code>, find <code>FIREBASE_CONFIG</code> at the bottom, and paste in the real ' +
+    '<code>apiKey</code>, <code>messagingSenderId</code> and <code>appId</code> from ' +
+    'Firebase console &rsaquo; Project settings &rsaquo; Your apps. Full steps are in <code>SETUP.md</code>.</div>';
+}
+
+async function saveSettings(){
+  const b = document.getElementById("saveBtn");
+  if (b){ b.disabled = true; b.textContent = "Saving..."; }
+  try { await store.saveSettings(); dirty(false); toast("Saved"); }
+  catch(e){ console.error(e); toast("Save failed -- " + (e.message || e.code)); }
+  if (b) b.textContent = "Save changes";
+  renderStudio();
+}
+function revertSettings(){
+  if (state.dirty && !confirm("Throw away your unsaved changes?")) return;
+  if (state.mode === "cloud") db.collection("site").doc("settings").get().then(d => {
+    state.settings = d.exists ? deepMerge(DEFAULTS, d.data()) : clone(DEFAULTS);
+    applyTheme(); dirty(false); renderStudio(); renderSite();
+  });
+  else { store.initLocal(); applyTheme(); dirty(false); renderStudio(); renderSite(); }
+}
+
+/* generic setters */
+function setTheme(k, v, re){ state.settings.theme[k] = v; applyTheme(); dirty(true); if (re) renderStudio(); }
+function setContent(k, v){ state.settings.content[k] = v; dirty(true); }
+function setSec(id, k, v, re){
+  const s = state.settings.sections.find(x => x.id === id); if (!s) return;
+  s[k] = v; dirty(true); if (re) renderStudio();
+}
+function setShip(k, v, re){ state.settings.shipping[k] = v; dirty(true); if (re) renderStudio(); }
+function setPrice(k, v){ state.settings.pricing[k] = v; dirty(true); calcRun(); }
+
+/* ---------------- LOOK & FEEL ---------------- */
+const PRESETS = {
+  "Gray clay":  { bg:"#f6f4f1", surface:"#ffffff", surface2:"#eceae6", text:"#26262b", dim:"#6e6e76", accent:"#8b8d86", accentText:"#ffffff", border:"#dcdad5" },
+  "Warm linen": { bg:"#faf7f2", surface:"#ffffff", surface2:"#f3ede4", text:"#23201c", dim:"#6f675d", accent:"#9a5b3f", accentText:"#ffffff", border:"#e2d9cc" },
+  "Studio white":{ bg:"#ffffff", surface:"#ffffff", surface2:"#f4f4f5", text:"#18181b", dim:"#71717a", accent:"#18181b", accentText:"#ffffff", border:"#e4e4e7" },
+  "Sage":       { bg:"#f4f6f2", surface:"#ffffff", surface2:"#e8ede4", text:"#22271f", dim:"#64705e", accent:"#5f7a52", accentText:"#ffffff", border:"#d7e0d0" },
+  "Ink":        { bg:"#17171a", surface:"#1f1f24", surface2:"#26262c", text:"#f2f2f3", dim:"#a1a1aa", accent:"#c8a06a", accentText:"#1a1a1d", border:"#32323a" },
+  "Terracotta": { bg:"#fdf6f1", surface:"#ffffff", surface2:"#f7e8dd", text:"#2d211a", dim:"#7a6358", accent:"#c05f3c", accentText:"#ffffff", border:"#ecd9ca" },
+  "Blush":      { bg:"#fdf7f7", surface:"#ffffff", surface2:"#f8ebeb", text:"#2b2124", dim:"#796369", accent:"#b3697a", accentText:"#ffffff", border:"#eed9dc" }
+};
+const COLOR_KEYS = [
+  ["bg","Page background"], ["surface","Cards"], ["surface2","Soft blocks"],
+  ["text","Text"], ["dim","Muted text"], ["accent","Accent / buttons"],
+  ["accentText","Text on accent"], ["border","Lines & borders"]
+];
+function applyPreset(name){
+  Object.assign(state.settings.theme, PRESETS[name]);
+  applyTheme(); dirty(true); renderStudio(); toast(name + " applied");
+}
+function seg(label, key, opts, hint){
+  return '<div style="margin-bottom:18px"><label class="f">' + label + '</label><div class="seg">' +
+    opts.map(o => '<button class="' + (state.settings.theme[key] === o[0] ? "on" : "") +
+      '" onclick="setTheme(\'' + key + '\',\'' + o[0] + '\',1)">' + o[1] + '</button>').join("") +
+    '</div>' + (hint ? '<div class="hint">' + hint + '</div>' : '') + '</div>';
+}
+function tabLook(){
+  const t = state.settings.theme, c = state.settings.content;
+  return '<h2>Look &amp; feel</h2><p class="sub">Everything about how the site looks. Changes show up behind this panel the moment you touch them -- press Save when you are happy.</p>' +
+  '<div class="sbox"><h3>Name &amp; words</h3>' +
+    '<div class="sgrid">' +
+    '<div><label class="f">Site name</label><input value="' + esc(c.siteName) + '" oninput="setContent(\'siteName\',this.value);$(\'#brand\').firstChild.textContent=this.value"></div>' +
+    '<div><label class="f">Tagline (under the name)</label><input value="' + esc(c.tagline) + '" oninput="setContent(\'tagline\',this.value)"></div>' +
+    '<div><label class="f">Footer line</label><input value="' + esc(c.footer) + '" oninput="setContent(\'footer\',this.value)"></div>' +
+    '<div><label class="f">Currency symbol</label><input value="' + esc(c.currency) + '" oninput="setContent(\'currency\',this.value)"></div>' +
+    '</div></div>' +
+  '<div class="sbox"><h3>Color presets</h3><div class="seg">' +
+    Object.keys(PRESETS).map(p => '<button onclick="applyPreset(\'' + p + '\')">' + p + '</button>').join("") +
+    '</div><div class="hint">A preset just fills in the eight colors below -- tweak any of them afterwards.</div></div>' +
+  '<div class="sbox"><h3>Colors</h3><div class="srow">' +
+    COLOR_KEYS.map(k => '<label class="swatch"><input type="color" value="' + esc(t[k[0]]) +
+      '" oninput="setTheme(\'' + k[0] + '\',this.value)"><span>' + k[1] + '</span></label>').join("") +
+    '</div></div>' +
+  '<div class="sbox"><h3>Type</h3><div class="sgrid">' +
+    '<div><label class="f">Heading font</label><select onchange="setTheme(\'fontHead\',this.value)">' +
+      Object.keys(FONTS).map(f => '<option' + (t.fontHead === f ? " selected" : "") + '>' + f + '</option>').join("") + '</select></div>' +
+    '<div><label class="f">Body font</label><select onchange="setTheme(\'fontBody\',this.value)">' +
+      Object.keys(FONTS).map(f => '<option' + (t.fontBody === f ? " selected" : "") + '>' + f + '</option>').join("") + '</select></div>' +
+    '</div><div style="margin-top:18px">' +
+    seg("Heading style","headStyle",[["normal","Normal"],["italic","Italic"],["upper","UPPERCASE"],["tracked","S P A C E D"]]) +
+    '</div></div>' +
+  '<div class="sbox"><h3>Shape &amp; decoration</h3>' +
+    seg("Corners","btnShape",[["pill","Pill buttons"],["round","Rounded"],["square","Square"]]) +
+    '<div style="margin-bottom:18px"><label class="f">Corner roundness -- ' + t.radius + 'px</label>' +
+      '<input type="range" min="0" max="28" value="' + t.radius + '" oninput="setTheme(\'radius\',+this.value);this.previousElementSibling.textContent=\'Corner roundness -- \'+this.value+\'px\'" style="padding:0"></div>' +
+    seg("Background texture","texture",[["none","Plain"],["grain","Grain"],["paper","Paper"],["dots","Dots"],["grid","Grid"]]) +
+    seg("Section divider","divider",[["line","Line"],["dots","Dots"],["wave","Wave"],["none","None"]]) +
+    seg("Photo framing","frame",[["none","Edge to edge"],["thin","Thin border"],["thick","Inset"],["mat","Gallery mat"]]) +
+    seg("Spacing","density",[["cozy","Cozy"],["comfortable","Comfortable"],["airy","Airy"]]) +
+    seg("Hero layout","heroLayout",[["split","Text + image"],["center","Centered text"]]) +
+    '<div><label class="f">Page width -- ' + t.width + 'px</label>' +
+      '<input type="range" min="900" max="1440" step="20" value="' + t.width + '" oninput="setTheme(\'width\',+this.value);this.previousElementSibling.textContent=\'Page width -- \'+this.value+\'px\'" style="padding:0"></div>' +
+    '</div>';
+}
+
+/* ---------------- SECTIONS ---------------- */
+const SECTION_KINDS = [
+  ["hero","Hero banner"], ["shop","Shop grid"], ["about","About + photo"],
+  ["socials","Social posts"], ["contact","Contact form"], ["text","Text block"], ["gallery","Photo gallery"]
+];
+function tabSections(){
+  const S = state.settings.sections;
+  return '<h2>Sections</h2><p class="sub">These are the tabs across the top of your site, in order. Hide one, rename it, reorder it, or add a new one.</p>' +
+  '<div class="sbox"><h3>Your sections</h3><div class="plist">' +
+    S.map((s, n) => '<div class="pitem">' +
+      '<label class="sw"><input type="checkbox" ' + (s.visible ? "checked" : "") + ' onchange="setSec(\'' + s.id + '\',\'visible\',this.checked,1)"><i></i></label>' +
+      '<div><div class="nm">' + esc(s.label) + '</div><div class="tg">' +
+        (SECTION_KINDS.find(k => k[0] === s.kind) || ["","?"])[1] + (s.inNav ? "" : " &middot; hidden from menu") + '</div></div>' +
+      '<div class="sp">' +
+        '<button class="iconbtn" title="Move up" onclick="moveSec(' + n + ',-1)"' + (n === 0 ? " disabled" : "") + '>&uarr;</button>' +
+        '<button class="iconbtn" title="Move down" onclick="moveSec(' + n + ',1)"' + (n === S.length - 1 ? " disabled" : "") + '>&darr;</button>' +
+        '<button class="iconbtn" title="Edit" onclick="editSec(\'' + s.id + '\')">&#9998;</button>' +
+        '<button class="iconbtn del" title="Delete" onclick="delSec(\'' + s.id + '\')">&times;</button>' +
+      '</div></div>').join("") +
+    '</div></div>' +
+  '<div class="sbox"><h3>Add a section</h3><div class="seg">' +
+    SECTION_KINDS.map(k => '<button onclick="addSec(\'' + k[0] + '\')">+ ' + k[1] + '</button>').join("") +
+    '</div></div>' +
+  (state.editing && state.editing.type === "section" ? secEditor() : "");
+}
+function moveSec(n, d){
+  const S = state.settings.sections, t = n + d;
+  if (t < 0 || t >= S.length) return;
+  [S[n], S[t]] = [S[t], S[n]];
+  dirty(true); renderStudio(); renderSite();
+}
+function addSec(kind){
+  const label = (SECTION_KINDS.find(k => k[0] === kind) || ["","Section"])[1];
+  const s = { id: uid("s_"), kind, label, visible:true, inNav:true, h:label, sub:"" };
+  if (kind === "shop"){ s.showSold = true; s.showFilters = true; }
+  if (kind === "about" || kind === "text") s.body = "Write something here.";
+  if (kind === "gallery") s.images = [];
+  if (kind === "hero"){ s.cta = "Shop"; s.ctaTarget = "shop"; }
+  state.settings.sections.push(s);
+  state.editing = { type:"section", id:s.id };
+  dirty(true); renderStudio(); renderSite();
+}
+function delSec(id){
+  const s = state.settings.sections.find(x => x.id === id);
+  if (!confirm('Delete the "' + s.label + '" section? Your items are not affected.')) return;
+  state.settings.sections = state.settings.sections.filter(x => x.id !== id);
+  if (state.editing && state.editing.id === id) state.editing = null;
+  dirty(true); renderStudio(); renderSite();
+}
+function editSec(id){ state.editing = { type:"section", id }; renderStudio(); go(id); }
+
+function secEditor(){
+  const s = state.settings.sections.find(x => x.id === state.editing.id);
+  if (!s) return "";
+  const targets = state.settings.sections.map(x =>
+    '<option value="' + x.id + '"' + (s.ctaTarget === x.id ? " selected" : "") + '>' + esc(x.label) + '</option>').join("");
+  const targets2 = state.settings.sections.map(x =>
+    '<option value="' + x.id + '"' + (s.cta2Target === x.id ? " selected" : "") + '>' + esc(x.label) + '</option>').join("");
+  let extra = "";
+  if (s.kind === "hero") extra =
+    '<div class="row2"><div class="field"><label class="f">Button text</label><input value="' + esc(s.cta || "") + '" oninput="setSec(\'' + s.id + '\',\'cta\',this.value);renderSite()"></div>' +
+    '<div class="field"><label class="f">Button goes to</label><select onchange="setSec(\'' + s.id + '\',\'ctaTarget\',this.value);renderSite()">' + targets + '</select></div></div>' +
+    '<div class="row2"><div class="field"><label class="f">Second button (optional)</label><input value="' + esc(s.cta2 || "") + '" oninput="setSec(\'' + s.id + '\',\'cta2\',this.value);renderSite()"></div>' +
+    '<div class="field"><label class="f">Second button goes to</label><select onchange="setSec(\'' + s.id + '\',\'cta2Target\',this.value);renderSite()">' + targets2 + '</select></div></div>' +
+    imgField(s, "img", "Hero image");
+  if (s.kind === "about") extra =
+    '<div class="field"><label class="f">Body text (blank line = new paragraph)</label><textarea rows="9" oninput="setSec(\'' + s.id + '\',\'body\',this.value);renderSite()">' + esc(s.body || "") + '</textarea></div>' +
+    imgField(s, "img", "Photo of you / your studio");
+  if (s.kind === "text") extra =
+    '<div class="field"><label class="f">Body text</label><textarea rows="9" oninput="setSec(\'' + s.id + '\',\'body\',this.value);renderSite()">' + esc(s.body || "") + '</textarea></div>';
+  if (s.kind === "contact") extra =
+    '<div class="field"><label class="f">Note above the form</label><input value="' + esc(s.body || "") + '" oninput="setSec(\'' + s.id + '\',\'body\',this.value);renderSite()"></div>';
+  if (s.kind === "shop") extra =
+    '<div class="srow" style="gap:22px">' +
+    '<label class="srow" style="gap:9px"><span class="sw"><input type="checkbox" ' + (s.showSold ? "checked" : "") + ' onchange="setSec(\'' + s.id + '\',\'showSold\',this.checked);renderSite()"><i></i></span><span>Keep sold pieces on display</span></label>' +
+    '<label class="srow" style="gap:9px"><span class="sw"><input type="checkbox" ' + (s.showFilters ? "checked" : "") + ' onchange="setSec(\'' + s.id + '\',\'showFilters\',this.checked);renderSite()"><i></i></span><span>Show type filter buttons</span></label>' +
+    '</div>';
+  if (s.kind === "gallery") extra = galleryField(s);
+  return '<div class="sbox" style="border-color:#9a5b3f"><h3>Editing: ' + esc(s.label) + '</h3>' +
+    '<div class="row2"><div class="field"><label class="f">Menu label</label><input value="' + esc(s.label) + '" oninput="setSec(\'' + s.id + '\',\'label\',this.value);renderSite()"></div>' +
+    '<div class="field"><label class="f">Heading on the page</label><input value="' + esc(s.h || "") + '" oninput="setSec(\'' + s.id + '\',\'h\',this.value);renderSite()"></div></div>' +
+    '<div class="field"><label class="f">Sub-heading / intro line</label><textarea rows="2" oninput="setSec(\'' + s.id + '\',\'sub\',this.value);renderSite()">' + esc(s.sub || "") + '</textarea></div>' +
+    extra +
+    '<label class="srow" style="gap:9px;margin-bottom:16px"><span class="sw"><input type="checkbox" ' + (s.inNav ? "checked" : "") + ' onchange="setSec(\'' + s.id + '\',\'inNav\',this.checked,1);renderSite()"><i></i></span><span>Show in the top menu</span></label>' +
+    '<button class="btn ghost" onclick="state.editing=null;renderStudio()">Done editing</button></div>';
+}
+
+/* ---------------- IMAGES ----------------
+   Photos are shrunk in the browser and stored with the record, so there is
+   no Firebase Storage bill and no upload step to get wrong. Firestore caps a
+   record at 1MB, so we keep each photo small and warn before you hit it. */
+function shrink(file, maxPx, maxKB){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onerror = () => rej(new Error("Could not read that file"));
+    fr.onload = () => {
+      const im = new Image();
+      im.onerror = () => rej(new Error("That file is not an image"));
+      im.onload = () => {
+        let { width:w, height:h } = im;
+        const sc = Math.min(1, maxPx / Math.max(w, h));
+        w = Math.round(w * sc); h = Math.round(h * sc);
+        const cv = el("canvas", { width:w, height:h });
+        cv.getContext("2d").drawImage(im, 0, 0, w, h);
+        let q = 0.82, out = cv.toDataURL("image/jpeg", q);
+        while (out.length / 1365 > maxKB && q > 0.4){ q -= 0.1; out = cv.toDataURL("image/jpeg", q); }
+        res(out);
+      };
+      im.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+function pickImage(cb, maxPx, maxKB){
+  const inp = el("input", { type:"file", accept:"image/*" });
+  inp.onchange = async () => {
+    const f = inp.files[0]; if (!f) return;
+    toast("Processing photo...");
+    try { cb(await shrink(f, maxPx || 1400, maxKB || 240)); }
+    catch(e){ toast(e.message); }
+  };
+  inp.click();
+}
+function imgField(s, key, label){
+  const v = s[key] || "";
+  return '<div class="field"><label class="f">' + label + '</label>' +
+    '<div class="srow">' +
+    (v ? '<img src="' + esc(v) + '" style="width:74px;height:74px;object-fit:cover;border-radius:8px">' : '') +
+    '<button class="btn ghost" onclick="pickImage(u=>{setSec(\'' + s.id + '\',\'' + key + '\',u,1);renderSite()},1600,300)">' +
+      (v ? "Replace photo" : "Upload photo") + '</button>' +
+    (v ? '<button class="btn ghost" onclick="setSec(\'' + s.id + '\',\'' + key + '\',\'\',1);renderSite()">Remove</button>' : '') +
+    '</div>' +
+    '<div style="margin-top:9px"><input placeholder="...or paste an image URL" value="' + (v.startsWith("data:") ? "" : esc(v)) +
+      '" oninput="setSec(\'' + s.id + '\',\'' + key + '\',this.value);renderSite()"></div></div>';
+}
+function galleryField(s){
+  const imgs = s.images || [];
+  return '<div class="field"><label class="f">Gallery photos</label>' +
+    '<div class="dz" onclick="pickImage(u=>{const x=state.settings.sections.find(q=>q.id===\'' + s.id + '\');x.images=(x.images||[]).concat([u]);dirty(true);renderStudio();renderSite()},1600,300)">Click to add a photo</div>' +
+    '<div class="thumbs-admin">' + imgs.map((u, n) => '<div class="t"><img src="' + esc(u) + '">' +
+      '<button class="rm" onclick="galRm(\'' + s.id + '\',' + n + ')">&times;</button></div>').join("") + '</div></div>';
+}
+function galRm(id, n){
+  const s = state.settings.sections.find(x => x.id === id);
+  s.images.splice(n, 1); dirty(true); renderStudio(); renderSite();
+}
+
+/* ---------------- ITEMS ---------------- */
+function tabItems(){
+  const T = state.settings.itemTypes;
+  return '<h2>Items</h2><p class="sub">Everything you have for sale. Items save on their own -- you do not need the Save button down there for these.</p>' +
+  '<div class="sbox"><h3>' + state.items.length + ' item' + (state.items.length === 1 ? "" : "s") + '</h3>' +
+    '<button class="btn" onclick="editItem(null)">+ Add an item</button>' +
+    (state.items.length ? '<table class="stable" style="margin-top:18px"><tr><th></th><th>Title</th><th>Type</th><th>Price</th><th>Status</th><th></th></tr>' +
+      state.items.map(i => '<tr><td>' + (i.images && i.images[0]
+          ? '<img class="th" src="' + esc(i.images[0]) + '">' : '<div class="th" style="width:44px;height:44px;border-radius:6px;background:#eee9e2"></div>') + '</td>' +
+        '<td><b>' + esc(i.title) + '</b>' + (i.published === false ? ' <span class="tg">(draft)</span>' : '') + '</td>' +
+        '<td>' + esc(typeName(i.typeId)) + '</td>' +
+        '<td>' + (num(i.price) ? money(i.price) : "--") + '</td>' +
+        '<td>' + esc(i.status || "available") + '</td>' +
+        '<td style="text-align:right;white-space:nowrap">' +
+          '<button class="iconbtn" onclick="editItem(\'' + i.id + '\')">&#9998;</button> ' +
+          '<button class="iconbtn del" onclick="rmItem(\'' + i.id + '\')">&times;</button></td></tr>').join("") +
+      '</table>' : '<div class="hint" style="margin-top:14px">No items yet.</div>') +
+    '</div>' +
+  (T.length ? "" : '<div class="banner">Add at least one item type first, over in <b>Item types</b>.</div>');
+}
+async function rmItem(id){
+  const i = state.items.find(x => x.id === id);
+  if (!confirm('Delete "' + i.title + '"? This cannot be undone.')) return;
+  await store.delItem(id); renderStudio(); toast("Deleted");
+}
+
+let draft = null;
+function editItem(id){
+  const base = { title:"", typeId:(state.settings.itemTypes[0] || {}).id || "", price:0, status:"available",
+                 images:[], description:"", fields:{}, published:true, costing:null };
+  draft = id ? clone(state.items.find(x => x.id === id)) : base;
+  itemModal();
+}
+function itemModal(){
+  const T = state.settings.itemTypes;
+  const flds = typeFields(draft.typeId);
+  openModal('<div style="padding:30px;max-height:none">' +
+    '<h2 style="margin-bottom:18px">' + (draft.id ? "Edit item" : "New item") + '</h2>' +
+    '<div class="row2">' +
+      '<div class="field"><label class="f">Title</label><input value="' + esc(draft.title) + '" oninput="draft.title=this.value"></div>' +
+      '<div class="field"><label class="f">Type</label><select onchange="draft.typeId=this.value;itemModal()">' +
+        T.map(t => '<option value="' + t.id + '"' + (draft.typeId === t.id ? " selected" : "") + '>' + esc(t.name) + '</option>').join("") +
+        '</select></div></div>' +
+    '<div class="row3">' +
+      '<div class="field"><label class="f">Price</label><input type="number" step="0.01" min="0" value="' + num(draft.price) + '" oninput="draft.price=+this.value"></div>' +
+      '<div class="field"><label class="f">Status</label><select onchange="draft.status=this.value">' +
+        ["available","reserved","sold"].map(s => '<option' + (draft.status === s ? " selected" : "") + '>' + s + '</option>').join("") + '</select></div>' +
+      '<div class="field"><label class="f">Visible on the site</label><select onchange="draft.published=this.value===\'yes\'">' +
+        '<option value="yes"' + (draft.published !== false ? " selected" : "") + '>Published</option>' +
+        '<option value="no"' + (draft.published === false ? " selected" : "") + '>Draft</option></select></div></div>' +
+    '<div class="field"><label class="f">Description</label><textarea rows="4" oninput="draft.description=this.value">' + esc(draft.description) + '</textarea></div>' +
+    (flds.length ? '<div class="row3">' + flds.map(f =>
+      '<div class="field"><label class="f">' + esc(f.label) + '</label><input value="' + esc((draft.fields || {})[f.key] || "") +
+      '" oninput="draft.fields=draft.fields||{};draft.fields[\'' + f.key + '\']=this.value"></div>').join("") + '</div>' : '') +
+    '<div class="field"><label class="f">Photos -- the first one is the cover</label>' +
+      '<div class="dz" onclick="pickImage(u=>{draft.images=(draft.images||[]).concat([u]);itemModal()},1500,230)">Click to add a photo</div>' +
+      '<div class="thumbs-admin">' + (draft.images || []).map((u, n) =>
+        '<div class="t' + (n === 0 ? " first" : "") + '"><img src="' + esc(u) + '">' +
+        '<button class="rm" onclick="draft.images.splice(' + n + ',1);itemModal()">&times;</button></div>').join("") + '</div>' +
+      '<div style="margin-top:10px"><input id="imgUrl" placeholder="...or paste an image URL and press Add">' +
+      '<button class="btn ghost" style="margin-top:8px" onclick="const v=document.getElementById(\'imgUrl\').value.trim();if(v){draft.images=(draft.images||[]).concat([v]);itemModal()}">Add URL</button></div>' +
+      sizeWarning() + '</div>' +
+    (draft.costing ? '<div class="hint" style="margin-bottom:14px">Priced with the calculator: cost ' + money(draft.costing.cost) +
+      ', you keep about ' + money(draft.costing.keep) + '.</div>' : '') +
+    '<div class="srow" style="margin-top:8px">' +
+      '<button class="btn" onclick="saveDraft()">' + (draft.id ? "Save item" : "Add item") + '</button>' +
+      '<button class="btn ghost" onclick="closeModal()">Cancel</button>' +
+      '<button class="btn ghost" onclick="calcFor(draft)">Price this with the calculator</button>' +
+    '</div></div>');
+}
+function sizeWarning(){
+  const kb = Math.round(JSON.stringify(draft).length / 1024);
+  if (kb < 600) return '<div class="hint">Record size: ' + kb + 'KB of the 1,000KB limit.</div>';
+  return '<div class="hint" style="color:#e0a884">Record size: ' + kb + 'KB -- getting close to the 1,000KB limit. ' +
+    'Remove a photo, or paste image URLs instead of uploading.</div>';
+}
+async function saveDraft(){
+  if (!draft.title.trim()) return toast("Give it a title first");
+  if (JSON.stringify(draft).length > 1000000) return toast("Too large -- remove a photo");
+  try { await store.saveItem(draft); closeModal(); renderStudio(); toast("Saved"); }
+  catch(e){ console.error(e); toast("Save failed -- " + (e.message || e.code)); }
+}
+
+/* ---------------- ITEM TYPES ---------------- */
+function tabTypes(){
+  const T = state.settings.itemTypes;
+  return '<h2>Item types</h2><p class="sub">A type is a kind of thing you sell -- mugs, originals, prints. Each type has its own detail fields, so a print can ask for an edition number while a mug asks about glaze.</p>' +
+  T.map(t => '<div class="sbox"><h3 style="display:flex;align-items:center;gap:10px">' +
+    '<input value="' + esc(t.name) + '" style="max-width:260px" oninput="renameType(\'' + t.id + '\',this.value)">' +
+    '<span style="margin-left:auto"></span>' +
+    '<span class="tg" style="font-weight:400;text-transform:none;letter-spacing:0">' +
+      state.items.filter(i => i.typeId === t.id).length + ' items</span>' +
+    '<button class="iconbtn del" onclick="delType(\'' + t.id + '\')">&times;</button></h3>' +
+    '<label class="f">Detail fields shown on the item page</label><div class="plist">' +
+    t.fields.map((f, n) => '<div class="pitem">' +
+      '<input value="' + esc(f.label) + '" style="max-width:260px" oninput="renameField(\'' + t.id + '\',' + n + ',this.value)">' +
+      '<div class="sp"><button class="iconbtn del" onclick="delField(\'' + t.id + '\',' + n + ')">&times;</button></div></div>').join("") +
+    '</div><button class="btn ghost" style="margin-top:12px" onclick="addField(\'' + t.id + '\')">+ Add a field</button></div>').join("") +
+  '<div class="sbox"><h3>New type</h3><div class="srow">' +
+    '<input id="newType" placeholder="e.g. Earrings" style="max-width:300px">' +
+    '<button class="btn" onclick="addType()">Add type</button></div></div>';
+}
+function renameType(id, v){ state.settings.itemTypes.find(t => t.id === id).name = v; dirty(true); renderSite(); }
+function addType(){
+  const v = document.getElementById("newType").value.trim();
+  if (!v) return toast("Name it first");
+  state.settings.itemTypes.push({ id:uid("t_"), name:v, fields:[{ key:uid("f_"), label:"Dimensions" }] });
+  dirty(true); renderStudio();
+}
+function delType(id){
+  const used = state.items.filter(i => i.typeId === id).length;
+  if (used) return toast(used + " item(s) still use this type -- change those first");
+  if (!confirm("Delete this type?")) return;
+  state.settings.itemTypes = state.settings.itemTypes.filter(t => t.id !== id);
+  dirty(true); renderStudio();
+}
+function addField(id){
+  state.settings.itemTypes.find(t => t.id === id).fields.push({ key:uid("f_"), label:"New field" });
+  dirty(true); renderStudio();
+}
+function renameField(id, n, v){ state.settings.itemTypes.find(t => t.id === id).fields[n].label = v; dirty(true); }
+function delField(id, n){
+  state.settings.itemTypes.find(t => t.id === id).fields.splice(n, 1);
+  dirty(true); renderStudio();
+}
+
+/* ---------------- PRICE CALCULATOR ----------------
+   Answers "what should this cost?" from what you actually spent plus what
+   you intend to pay yourself -- instead of guessing. */
+const calc = { materials:[{ label:"Clay", cost:0 }], hours:0, extra:0, forItem:null, override:null };
+
+function calcFor(item){
+  calc.forItem = item || null;
+  if (item && item.costing){
+    calc.materials = clone(item.costing.materials || [{ label:"Clay", cost:0 }]);
+    calc.hours = item.costing.hours || 0;
+    calc.extra = item.costing.extra || 0;
+  }
+  closeModal(); state.studioTab = "calc"; renderStudio();
+}
+
+function calcMath(){
+  const p = state.settings.pricing, sh = state.settings.shipping;
+  const materials = calc.materials.reduce((a, m) => a + num(m.cost), 0);
+  const labor = num(calc.hours) * num(p.hourlyRate);
+  const packaging = p.includePackaging ? num(sh.packaging) : 0;
+  const extra = num(calc.extra);
+  const direct = materials + labor + packaging + extra;
+  const overhead = direct * num(p.overheadPct) / 100;
+  const cost = direct + overhead;
+  const denom = 1 - num(p.marginPct) / 100 - num(p.feePct) / 100;
+  let price = denom > 0.02 ? cost / denom : cost * 2;
+  const step = num(p.roundTo);
+  if (step > 0) price = Math.ceil(price / step) * step;
+  const shown = calc.override != null ? num(calc.override) : price;
+  const fees = shown * num(p.feePct) / 100;
+  const keep = shown - cost - fees;
+  return { materials, labor, packaging, extra, direct, overhead, cost, price, shown, fees, keep,
+           margin: shown > 0 ? keep / shown * 100 : 0, denom };
+}
+
+function tabCalc(){
+  const p = state.settings.pricing, m = calcMath();
+  return '<h2>Price calculator</h2><p class="sub">Put in what the piece actually cost you to make and how much you want paid for your time. It works backwards to a price that leaves you the profit you asked for -- after fees.</p>' +
+  (calc.forItem ? '<div class="banner">Pricing <b>' + esc(calc.forItem.title || "this new item") +
+    '</b>. When the number looks right, press <b>Use this price</b> and it goes straight onto the item.</div>' : '') +
+  '<div class="sgrid" style="grid-template-columns:1.15fr .85fr;align-items:start;gap:20px">' +
+  '<div>' +
+    '<div class="sbox"><h3>What this piece cost you</h3>' +
+      '<label class="f">Materials &amp; supplies</label><div class="plist" id="matList">' +
+      calc.materials.map((mt, n) => '<div class="pitem">' +
+        '<input value="' + esc(mt.label) + '" placeholder="What was it?" oninput="calc.materials[' + n + '].label=this.value">' +
+        '<input type="number" step="0.01" min="0" style="max-width:120px" value="' + num(mt.cost) + '" oninput="calc.materials[' + n + '].cost=+this.value;calcRun()">' +
+        '<div class="sp"><button class="iconbtn del" onclick="calc.materials.splice(' + n + ',1);renderStudio()">&times;</button></div>' +
+        '</div>').join("") + '</div>' +
+      '<button class="btn ghost" style="margin-top:10px" onclick="calc.materials.push({label:\'\',cost:0});renderStudio()">+ Add a line</button>' +
+      '<div class="row2" style="margin-top:18px">' +
+        '<div><label class="f">Hours you spent on it</label><input type="number" step="0.25" min="0" value="' + num(calc.hours) + '" oninput="calc.hours=+this.value;calcRun()"></div>' +
+        '<div><label class="f">Anything else (kiln firing, framing)</label><input type="number" step="0.01" min="0" value="' + num(calc.extra) + '" oninput="calc.extra=+this.value;calcRun()"></div>' +
+      '</div></div>' +
+    '<div class="sbox"><h3>Your rules -- set these once</h3><div class="row2">' +
+      '<div><label class="f">You pay yourself per hour</label><input type="number" step="0.5" min="0" value="' + num(p.hourlyRate) + '" oninput="setPrice(\'hourlyRate\',+this.value)"></div>' +
+      '<div><label class="f">Profit margin you want (%)</label><input type="number" step="1" min="0" max="80" value="' + num(p.marginPct) + '" oninput="setPrice(\'marginPct\',+this.value)"></div>' +
+      '<div><label class="f">Studio overhead (%)</label><input type="number" step="1" min="0" value="' + num(p.overheadPct) + '" oninput="setPrice(\'overheadPct\',+this.value)"></div>' +
+      '<div><label class="f">Payment / platform fees (%)</label><input type="number" step="0.1" min="0" value="' + num(p.feePct) + '" oninput="setPrice(\'feePct\',+this.value)"></div>' +
+      '<div><label class="f">Round price up to nearest</label><input type="number" step="1" min="0" value="' + num(p.roundTo) + '" oninput="setPrice(\'roundTo\',+this.value)"></div>' +
+      '<div><label class="f">Build packaging into the price?</label><select onchange="setPrice(\'includePackaging\',this.value===\'yes\')">' +
+        '<option value="yes"' + (p.includePackaging ? " selected" : "") + '>Yes -- ' + money(state.settings.shipping.packaging) + ' per piece</option>' +
+        '<option value="no"' + (!p.includePackaging ? " selected" : "") + '>No -- charge it with shipping</option></select></div>' +
+      '</div>' +
+      '<div class="hint">Overhead covers the costs that are not per-piece: studio rent, electricity, your website, tools wearing out. 10-15% is a normal starting point. Fees are what the payment app keeps -- around 3% for most cards.</div>' +
+      '</div>' +
+  '</div>' +
+  '<div><div class="sbox" style="position:sticky;top:0"><h3>What to charge</h3>' + calcOutput(m) + '</div></div>' +
+  '</div>';
+}
+function calcOutput(m){
+  const p = state.settings.pricing;
+  return '<div class="calc-out" id="calcOut">' +
+    '<div class="cline"><span>Materials</span><b>' + money(m.materials) + '</b></div>' +
+    '<div class="cline"><span>Your time -- ' + num(calc.hours) + 'h at ' + money(p.hourlyRate) + '</span><b>' + money(m.labor) + '</b></div>' +
+    (m.packaging ? '<div class="cline"><span>Packaging</span><b>' + money(m.packaging) + '</b></div>' : '') +
+    (m.extra ? '<div class="cline"><span>Other costs</span><b>' + money(m.extra) + '</b></div>' : '') +
+    '<div class="cline"><span>Overhead at ' + num(p.overheadPct) + '%</span><b>' + money(m.overhead) + '</b></div>' +
+    '<div class="cline" style="border-top:1px solid #3d352d;margin-top:6px;padding-top:10px"><span>True cost to make</span><b>' + money(m.cost) + '</b></div>' +
+    '<div class="cline total"><span>Suggested price</span><b>' + money(m.price) + '</b></div>' +
+    (m.denom <= 0.02 ? '<div class="hint" style="color:#e08b84">Your margin plus fees is 98% or more, which has no mathematical answer. Lower the margin.</div>' : '') +
+    '<div style="margin:16px 0 6px"><label class="f">Or try a price of your own</label>' +
+      '<input type="number" step="1" min="0" placeholder="' + Math.round(m.price) + '" value="' + (calc.override != null ? calc.override : "") +
+      '" oninput="calc.override=this.value===\'\'?null:+this.value;calcRun()"></div>' +
+    '<div class="cline"><span>Selling at</span><b>' + money(m.shown) + '</b></div>' +
+    '<div class="cline"><span>Fees at ' + num(p.feePct) + '%</span><b>-' + money(m.fees) + '</b></div>' +
+    '<div class="cline ' + (m.keep >= 0 ? "pos" : "neg") + '"><span>You keep</span><b>' + money(m.keep) + '</b></div>' +
+    '<div class="cline ' + (m.margin >= 0 ? "pos" : "neg") + '"><span>Real margin</span><b>' + m.margin.toFixed(1) + '%</b></div>' +
+    '<div class="hint">"You keep" already has your hourly pay inside it -- so this is profit on top of paying yourself ' +
+      money(m.labor) + ' for the work.</div>' +
+    (calc.forItem
+      ? '<button class="btn" style="margin-top:14px;width:100%;justify-content:center" onclick="useCalcPrice()">Use this price -- ' + money(m.shown) + '</button>'
+      : '<div class="hint" style="margin-top:12px">Open an item and press <b>Price this with the calculator</b> to push a number straight onto it.</div>') +
+    '</div>';
+}
+function calcRun(){
+  const o = document.getElementById("calcOut");
+  if (o) o.outerHTML = calcOutput(calcMath());
+}
+async function useCalcPrice(){
+  const m = calcMath();
+  const it = calc.forItem;
+  it.price = Math.round(m.shown * 100) / 100;
+  it.costing = { materials:clone(calc.materials), hours:num(calc.hours), extra:num(calc.extra),
+                 cost:Math.round(m.cost * 100) / 100, keep:Math.round(m.keep * 100) / 100 };
+  if (it.title){ await store.saveItem(it); toast("Priced at " + money(it.price)); }
+  else { draft = it; toast("Price applied -- finish the item"); }
+  calc.forItem = null; state.studioTab = "items"; renderStudio();
+  if (!it.title) itemModal();
+}
+
+/* ---------------- SHIPPING ---------------- */
+function tabShipping(){
+  const sh = state.settings.shipping;
+  return '<h2>Shipping</h2><p class="sub">These options show up in the delivery dropdown when somebody sends you an inquiry, and the cheapest one is quoted on each item page.</p>' +
+  '<div class="sbox"><h3>Your shipping options</h3><div class="plist">' +
+    (sh.methods || []).map((m, n) => '<div class="pitem" style="flex-wrap:wrap">' +
+      '<input value="' + esc(m.name) + '" placeholder="Name" style="max-width:230px" oninput="shipSet(' + n + ',\'name\',this.value)">' +
+      '<input type="number" step="0.01" min="0" value="' + num(m.price) + '" style="max-width:110px" oninput="shipSet(' + n + ',\'price\',+this.value)">' +
+      '<input value="' + esc(m.note || "") + '" placeholder="Note (optional)" style="min-width:180px;flex:1" oninput="shipSet(' + n + ',\'note\',this.value)">' +
+      '<div class="sp">' +
+        '<button class="iconbtn" onclick="shipMove(' + n + ',-1)"' + (n === 0 ? " disabled" : "") + '>&uarr;</button>' +
+        '<button class="iconbtn" onclick="shipMove(' + n + ',1)"' + (n === sh.methods.length - 1 ? " disabled" : "") + '>&darr;</button>' +
+        '<button class="iconbtn del" onclick="shipDel(' + n + ')">&times;</button></div></div>').join("") +
+    '</div><button class="btn ghost" style="margin-top:12px" onclick="shipAdd()">+ Add an option</button>' +
+    '<div class="hint">The first option in this list is the one quoted as "shipping from" on item pages -- keep your cheapest at the top.</div></div>' +
+  '<div class="sbox"><h3>Packaging &amp; extras</h3><div class="row2">' +
+    '<div><label class="f">Packaging cost per piece</label><input type="number" step="0.01" min="0" value="' + num(sh.packaging) + '" oninput="setShip(\'packaging\',+this.value)"></div>' +
+    '<div><label class="f">Free shipping over (0 = never)</label><input type="number" step="1" min="0" value="' + num(sh.freeOver) + '" oninput="setShip(\'freeOver\',+this.value)"></div>' +
+    '</div>' +
+    '<label class="srow" style="gap:9px;margin:6px 0 14px"><span class="sw"><input type="checkbox" ' + (sh.localPickup ? "checked" : "") +
+      ' onchange="setShip(\'localPickup\',this.checked,1)"><i></i></span><span>Offer local pickup</span></label>' +
+    (sh.localPickup ? '<div><label class="f">Pickup note shown on item pages</label><input value="' + esc(sh.pickupNote || "") +
+      '" oninput="setShip(\'pickupNote\',this.value)"></div>' : '') +
+    '<div class="hint">Packaging also feeds the price calculator -- boxes, bubble wrap, tape and the tissue paper all count.</div></div>';
+}
+function shipSet(n, k, v){ state.settings.shipping.methods[n][k] = v; dirty(true); }
+function shipAdd(){ state.settings.shipping.methods.push({ id:uid("m_"), name:"New option", price:0, note:"" }); dirty(true); renderStudio(); }
+function shipDel(n){ state.settings.shipping.methods.splice(n, 1); dirty(true); renderStudio(); }
+function shipMove(n, d){
+  const M = state.settings.shipping.methods, t = n + d;
+  if (t < 0 || t >= M.length) return;
+  [M[n], M[t]] = [M[t], M[n]]; dirty(true); renderStudio();
+}
+
+/* ---------------- SOCIALS ---------------- */
+function tabSocials(){
+  const so = state.settings.socials;
+  return '<h2>Socials</h2><p class="sub">Two parts: the buttons that link to your profiles, and the posts you pin to the Socials tab. For a post, open it on Instagram or TikTok, choose <b>Embed</b> / <b>Copy embed code</b>, and paste the whole code block here.</p>' +
+  '<div class="sbox"><h3>Profile links</h3><div class="plist">' +
+    (so.links || []).map((l, n) => '<div class="pitem">' +
+      '<input value="' + esc(l.label) + '" placeholder="Instagram" style="max-width:170px" oninput="socLink(' + n + ',\'label\',this.value)">' +
+      '<input value="' + esc(l.url) + '" placeholder="https://instagram.com/yourname" style="flex:1;min-width:200px" oninput="socLink(' + n + ',\'url\',this.value)">' +
+      '<div class="sp"><button class="iconbtn del" onclick="socLinkDel(' + n + ')">&times;</button></div></div>').join("") +
+    '</div><button class="btn ghost" style="margin-top:12px" onclick="socLinkAdd()">+ Add a link</button></div>' +
+  '<div class="sbox"><h3>Pinned posts (' + state.posts.length + ')</h3>' +
+    '<p class="hint" style="margin:0 0 14px">Posts save on their own. Paste the embed code exactly as the app gives it to you.</p>' +
+    '<div class="plist">' + state.posts.map((p, n) => '<div class="pitem">' +
+      '<label class="sw"><input type="checkbox" ' + (p.visible !== false ? "checked" : "") + ' onchange="postVis(\'' + p.id + '\',this.checked)"><i></i></label>' +
+      '<div style="min-width:0"><div class="nm">' + esc(p.caption || p.platform || "Post") + '</div>' +
+      '<div class="tg">' + esc((p.embed || "").slice(0, 54)) + '...</div></div>' +
+      '<div class="sp"><button class="iconbtn" onclick="postMove(' + n + ',-1)"' + (n === 0 ? " disabled" : "") + '>&uarr;</button>' +
+      '<button class="iconbtn" onclick="postMove(' + n + ',1)"' + (n === state.posts.length - 1 ? " disabled" : "") + '>&darr;</button>' +
+      '<button class="iconbtn" onclick="postEdit(\'' + p.id + '\')">&#9998;</button>' +
+      '<button class="iconbtn del" onclick="postDel(\'' + p.id + '\')">&times;</button></div></div>').join("") + '</div>' +
+    '<button class="btn" style="margin-top:14px" onclick="postEdit(null)">+ Pin a post</button></div>' +
+  '<div class="sbox"><h3>Note above the feed</h3>' +
+    '<input value="' + esc(so.note || "") + '" placeholder="Follow along for new drops" oninput="state.settings.socials.note=this.value;dirty(true)"></div>';
+}
+function socLink(n, k, v){ state.settings.socials.links[n][k] = v; dirty(true); }
+function socLinkAdd(){ state.settings.socials.links.push({ label:"", url:"" }); dirty(true); renderStudio(); }
+function socLinkDel(n){ state.settings.socials.links.splice(n, 1); dirty(true); renderStudio(); }
+async function postVis(id, v){ const p = clone(state.posts.find(x => x.id === id)); p.visible = v; await store.savePost(p); renderStudio(); }
+async function postDel(id){ if (!confirm("Unpin this post?")) return; await store.delPost(id); renderStudio(); }
+async function postMove(n, d){
+  const t = n + d; if (t < 0 || t >= state.posts.length) return;
+  const a = clone(state.posts[n]), b = clone(state.posts[t]);
+  const ao = a.order == null ? n : a.order, bo = b.order == null ? t : b.order;
+  a.order = bo; b.order = ao;
+  await store.savePost(a); await store.savePost(b); renderStudio();
+}
+let postDraft = null;
+function postEdit(id){
+  postDraft = id ? clone(state.posts.find(x => x.id === id)) : { caption:"", platform:"Instagram", embed:"", visible:true };
+  openModal('<div style="padding:30px">' +
+    '<h2 style="margin-bottom:4px">' + (id ? "Edit post" : "Pin a post") + '</h2>' +
+    '<p class="note" style="margin-bottom:20px">On Instagram: open the post in a browser &rsaquo; the <b>...</b> menu &rsaquo; <b>Embed</b> &rsaquo; Copy embed code. On TikTok: <b>Share</b> &rsaquo; <b>Embed</b>.</p>' +
+    '<div class="row2"><div class="field"><label class="f">Platform</label><select onchange="postDraft.platform=this.value">' +
+      ["Instagram","TikTok","Facebook","Pinterest","YouTube","X","Other"].map(p =>
+        '<option' + (postDraft.platform === p ? " selected" : "") + '>' + p + '</option>').join("") + '</select></div>' +
+    '<div class="field"><label class="f">Caption under it (optional)</label><input value="' + esc(postDraft.caption || "") + '" oninput="postDraft.caption=this.value"></div></div>' +
+    '<div class="field"><label class="f">Embed code</label><textarea rows="7" placeholder="&lt;blockquote class=&quot;instagram-media&quot; ...&gt;" oninput="postDraft.embed=this.value">' + esc(postDraft.embed || "") + '</textarea></div>' +
+    '<button class="btn" onclick="postSave()">Save post</button></div>', true);
+}
+async function postSave(){
+  if (!(postDraft.embed || "").trim()) return toast("Paste the embed code first");
+  try { await store.savePost(postDraft); closeModal(); renderStudio(); toast("Pinned"); }
+  catch(e){ toast("Save failed -- " + (e.message || e.code)); }
+}
+
+/* ---------------- INQUIRIES ---------------- */
+function tabInbox(){
+  const Q = state.inquiries;
+  return '<h2>Inquiries</h2><p class="sub">Everyone who has asked to buy something. Reply from your own email -- this is just the record.</p>' +
+  (Q.length ? '<div class="sbox"><table class="stable"><tr><th>When</th><th>Who</th><th>Wants</th><th>Delivery</th><th></th></tr>' +
+    Q.map(q => '<tr><td style="white-space:nowrap">' + new Date(q.createdAt || 0).toLocaleDateString() + '</td>' +
+      '<td><b>' + esc(q.name) + '</b><div class="tg">' + esc(q.email) + '</div></td>' +
+      '<td>' + (q.itemTitle ? esc(q.itemTitle) + (q.itemPrice ? ' <span class="tg">' + money(q.itemPrice) + '</span>' : '') : '<span class="tg">General question</span>') +
+        (q.message ? '<div class="tg" style="max-width:330px;white-space:pre-wrap">' + esc(q.message) + '</div>' : '') + '</td>' +
+      '<td>' + esc(q.shipping || "--") + '</td>' +
+      '<td style="text-align:right;white-space:nowrap">' +
+        '<a class="iconbtn" style="text-decoration:none" title="Reply" href="mailto:' + esc(q.email) +
+          '?subject=' + encodeURIComponent("Re: " + (q.itemTitle || "your inquiry")) + '">&#9993;</a> ' +
+        '<button class="iconbtn del" onclick="qDel(\'' + q.id + '\')">&times;</button></td></tr>').join("") +
+    '</table></div>'
+   : '<div class="sbox"><div class="hint">No inquiries yet.</div></div>');
+}
+async function qDel(id){ if (!confirm("Delete this inquiry?")) return; await store.delInquiry(id); renderStudio(); }
+
+/* ---------------- SETUP ---------------- */
+function tabSetup(){
+  const cloud = state.mode === "cloud";
+  return '<h2>Setup</h2><p class="sub">Where this site stores things, and how to get your own copy of the data.</p>' +
+  '<div class="sbox"><h3>Storage</h3>' +
+    '<div class="cline"><span>Mode</span><b>' + (cloud ? "Firebase -- live for everyone" : "Local preview -- this browser only") + '</b></div>' +
+    '<div class="cline"><span>Project</span><b>' + esc(FIREBASE_CONFIG.projectId) + '</b></div>' +
+    (cloud ? '<div class="cline"><span>Signed in as</span><b>' + esc((state.user && state.user.email) || "--") + '</b></div>' : '') +
+    '<div class="cline"><span>Items</span><b>' + state.items.length + '</b></div>' +
+    '<div class="cline"><span>Pinned posts</span><b>' + state.posts.length + '</b></div>' +
+    '<div class="cline"><span>Inquiries</span><b>' + state.inquiries.length + '</b></div>' +
+    (cloud ? "" : '<div class="hint" style="margin-top:12px">Paste your Firebase apiKey, messagingSenderId and appId into <code>FIREBASE_CONFIG</code> at the bottom of index.html to go live. SETUP.md walks through it.</div>') +
+    '</div>' +
+  '<div class="sbox"><h3>Backup</h3>' +
+    '<p class="hint" style="margin:0 0 14px">Downloads one file with your whole site in it -- settings, items, posts. Keep a copy before any big redesign.</p>' +
+    '<div class="srow"><button class="btn ghost" onclick="exportAll()">Download backup</button>' +
+    '<button class="btn ghost" onclick="importAll()">Restore from backup</button></div></div>' +
+  '<div class="sbox"><h3>Start over</h3>' +
+    '<p class="hint" style="margin:0 0 14px">Puts the colors, sections and item types back to how they shipped. Your items, posts and inquiries are untouched.</p>' +
+    '<button class="btn danger" onclick="resetDesign()">Reset the design</button></div>';
+}
+function exportAll(){
+  const blob = new Blob([JSON.stringify({
+    exportedAt:new Date().toISOString(), settings:state.settings, items:state.items, posts:state.posts
+  }, null, 2)], { type:"application/json" });
+  const a = el("a", { href:URL.createObjectURL(blob),
+    download:(state.settings.content.siteName || "site").toLowerCase().replace(/\W+/g, "-") + "-backup-" + new Date().toISOString().slice(0, 10) + ".json" });
+  a.click(); URL.revokeObjectURL(a.href); toast("Backup downloaded");
+}
+function importAll(){
+  const inp = el("input", { type:"file", accept:".json,application/json" });
+  inp.onchange = () => {
+    const f = inp.files[0]; if (!f) return;
+    const fr = new FileReader();
+    fr.onload = async () => {
+      try {
+        const d = JSON.parse(fr.result);
+        if (!d.settings) throw new Error("That file has no site settings in it");
+        if (!confirm("Replace the current design and items with this backup?")) return;
+        state.settings = deepMerge(DEFAULTS, d.settings);
+        await store.saveSettings();
+        for (const it of (d.items || [])) await store.saveItem(it);
+        for (const p of (d.posts || [])) await store.savePost(p);
+        applyTheme(); dirty(false); renderStudio(); renderSite(); toast("Backup restored");
+      } catch(e){ toast(e.message || "Could not read that file"); }
+    };
+    fr.readAsText(f);
+  };
+  inp.click();
+}
+function resetDesign(){
+  if (!confirm("Reset colors, sections and item types to the originals?")) return;
+  const items = state.items;
+  state.settings = clone(DEFAULTS);
+  const used = new Set(items.map(i => i.typeId));
+  state.settings.itemTypes = DEFAULTS.itemTypes.concat(
+    [...used].filter(id => !DEFAULTS.itemTypes.some(t => t.id === id)).map(id => ({ id, name:"Imported type", fields:[] })));
+  applyTheme(); dirty(true); renderStudio(); renderSite(); toast("Design reset -- press Save to keep it");
+}
+
+/* =======================================================================
+   8. BOOT
+   ======================================================================= */
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape"){ if ($("#modal").classList.contains("open")) closeModal(); else if (studioOpen()) closeStudio(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === "s" && studioOpen()){ e.preventDefault(); if (state.dirty) saveSettings(); }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "e"){ e.preventDefault(); studioOpen() ? closeStudio() : openStudio(); }
+});
+window.addEventListener("beforeunload", e => { if (state.dirty){ e.preventDefault(); e.returnValue = ""; } });
+
+(async function boot(){
+  await store.init();
+  applyTheme();
+  renderSite();
+  if (location.hash === "#studio") openStudio();
+})();
+
+</script>
+</body>
+</html>
