@@ -1,3 +1,8 @@
 .vercel
 .DS_Store
 Thumbs.db
+
+# Firebase service-account private keys — full admin access, never commit
+*firebase-adminsdk*.json
+serviceAccountKey*.json
+*-serviceaccount.json
