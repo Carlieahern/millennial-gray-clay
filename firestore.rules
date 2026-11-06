@@ -48,6 +48,38 @@ service cloud.firestore {
       allow read, update, delete: if signedIn();
     }
 
+    // The outbox the "Trigger Email" extension watches. The website drops a
+    // letter in here for each inquiry and the extension sends it.
+    //
+    // A visitor's browser does the writing, so without these rules this
+    // would be an open mail relay: anyone could make your Firebase project
+    // send email to anybody. So:
+    //
+    //   * `to` must equal the alert address saved in site/settings. Nobody
+    //     can aim an email at a third party, only at you.
+    //   * only the two fields the extension reads are allowed through, so
+    //     no cc, bcc, replyTo, attachments or templates.
+    //   * nobody can read this collection back. It holds your customers'
+    //     messages and email addresses.
+    //
+    // What this does NOT stop: somebody could still submit the form over and
+    // over and make your inbox noisy. They can already do that to the
+    // inquiries list. The cap is that it can only ever reach you.
+    match /mail/{id} {
+      function alertTo() {
+        return get(/databases/$(database)/documents/site/settings).data.get('notifyEmail', '');
+      }
+      allow create: if alertTo() != ''
+                    && request.resource.data.keys().hasOnly(['to', 'message'])
+                    && request.resource.data.to == alertTo()
+                    && request.resource.data.message.keys().hasOnly(['subject', 'text'])
+                    && request.resource.data.message.subject is string
+                    && request.resource.data.message.subject.size() < 300
+                    && request.resource.data.message.text is string
+                    && request.resource.data.message.text.size() < 8000;
+      allow read, update, delete: if signedIn();
+    }
+
     // Anything not named above is closed.
     match /{document=**} {
       allow read, write: if false;

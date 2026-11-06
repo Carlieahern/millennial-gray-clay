@@ -352,7 +352,11 @@ const DEFAULTS = {
   },
   pricing: {
     hourlyRate:25, overheadPct:12, feePct:3, marginPct:40, roundTo:5, includePackaging:true
-  }
+  },
+
+  // Where new inquiries get emailed. Blank means no emails are sent and
+  // nothing about this feature is published. See the Inquiries tab.
+  notifyEmail: ""
 };
 
 /* =======================================================================
@@ -490,6 +494,16 @@ const store = {
   async delInquiry(id){
     if (state.mode === "cloud") await db.collection("inquiries").doc(id).delete();
     else { state.inquiries = state.inquiries.filter(x => x.id !== id); lsWrite({ inquiries: state.inquiries }); }
+  },
+
+  // Drop a letter in the outbox that the Firebase "Trigger Email" extension
+  // watches. The extension does the sending; this only queues it.
+  //
+  // The shape {to, message:{subject, text}} is the extension's, not ours --
+  // do not add fields, the security rules reject anything else.
+  async queueMail(to, subject, text){
+    if (state.mode !== "cloud") return;
+    await db.collection("mail").add({ to: to, message: { subject: subject, text: text } });
   }
 };
 function cloudError(e){
@@ -730,6 +744,37 @@ function openInquiry(itemId){
     '<button class="btn" type="submit">Send inquiry</button></form></div>', true);
 }
 
+// --- the alert email ----------------------------------------------------
+// One line per thing you need to know, so it is readable on a phone screen
+// without scrolling. Everything here comes from the customer, so newlines
+// are stripped from the subject -- a header is a single line by definition.
+function oneLine(v){ return String(v == null ? "" : v).replace(/[\r\n\t]+/g, " ").trim(); }
+
+function mailSubject(f, it){
+  const who = oneLine(f.get("name")).slice(0, 60);
+  const what = it ? oneLine(it.title).slice(0, 80) : "a general question";
+  return ("New inquiry -- " + what + (who ? " -- " + who : "")).slice(0, 250);
+}
+
+function mailBody(f, it){
+  const L = [];
+  L.push("Somebody has asked to buy from your website.");
+  L.push("");
+  L.push("Name:      " + oneLine(f.get("name")));
+  L.push("Email:     " + oneLine(f.get("email")));
+  L.push("Wants:     " + (it ? oneLine(it.title) + (num(it.price) ? "  " + money(num(it.price)) : "")
+                             : "nothing specific -- general question"));
+  if (f.get("shipping")) L.push("Delivery:  " + oneLine(f.get("shipping")));
+  L.push("");
+  const msg = String(f.get("message") || "").trim();
+  L.push(msg ? "What they said:\n\n" + msg : "They did not leave a message.");
+  L.push("");
+  L.push("--");
+  L.push("Reply straight to this person at " + oneLine(f.get("email")) + ".");
+  L.push("Every inquiry is also kept in Studio > Inquiries.");
+  return L.join("\n").slice(0, 7900);   // rules cap the field at 8000
+}
+
 async function submitInquiry(e, itemId){
   e.preventDefault();
   const f = new FormData(e.target);
@@ -742,6 +787,16 @@ async function submitInquiry(e, itemId){
       shipping: f.get("shipping") || "", message: f.get("message") || "",
       itemId: itemId || "", itemTitle: it ? it.title : "", itemPrice: it ? num(it.price) : 0
     });
+
+    // The inquiry is safely saved by this point. Emailing it is a bonus, so
+    // a failure here must never reach the customer -- they did nothing wrong
+    // and the message is not lost. It still shows in Studio > Inquiries.
+    const notify = (state.settings.notifyEmail || "").trim();
+    if (notify) {
+      try { await store.queueMail(notify, mailSubject(f, it), mailBody(f, it)); }
+      catch(err){ console.warn("Inquiry saved; the email alert could not be queued:", err); }
+    }
+
     openModal('<div style="padding:46px 34px;text-align:center">' +
       '<h2>Thank you</h2><p class="note">Your inquiry is in. I\'ll reply to ' + esc(f.get("email")) + ' shortly.</p>' +
       '<button class="btn ghost" style="margin-top:18px" onclick="closeModal()">Close</button></div>', true);
@@ -885,6 +940,7 @@ function setSec(id, k, v, re){
   s[k] = v; dirty(true); if (re) renderStudio();
 }
 function setShip(k, v, re){ state.settings.shipping[k] = v; dirty(true); if (re) renderStudio(); }
+function setNotify(v){ state.settings.notifyEmail = v.trim(); dirty(true); }
 function setPrice(k, v){ state.settings.pricing[k] = v; dirty(true); calcRun(); }
 
 /* ---------------- LOOK & FEEL ---------------- */
@@ -1427,7 +1483,16 @@ async function postSave(){
 /* ---------------- INQUIRIES ---------------- */
 function tabInbox(){
   const Q = state.inquiries;
-  return '<h2>Inquiries</h2><p class="sub">Everyone who has asked to buy something. Reply from your own email -- this is just the record.</p>' +
+  const notify = state.settings.notifyEmail || "";
+  return '<h2>Inquiries</h2><p class="sub">Everyone who has asked to buy something. Reply from your own email -- this page is the record.</p>' +
+  '<div class="sbox"><h3>Email me each new inquiry</h3>' +
+    '<div class="field" style="max-width:400px"><label class="f">Send alerts to</label>' +
+    '<input type="email" value="' + esc(notify) + '" placeholder="you@example.com" oninput="setNotify(this.value)"></div>' +
+    '<div class="hint">' + (notify
+      ? 'Every new inquiry gets emailed here with the whole message in it. This only works once the <b>Trigger Email</b> extension is installed in Firebase -- SETUP.md walks through it. Until then nothing is lost: inquiries still land in the list below, they just do not email.'
+      : 'Blank means no emails at all -- inquiries appear in the list below and nowhere else.') + '</div>' +
+    '<div class="hint"><b>Worth knowing before you fill this in:</b> the address is kept in your site settings, and those are public. Anyone determined enough can read it. Use a shop address or an alias rather than a private one.</div>' +
+  '</div>' +
   (Q.length ? '<div class="sbox"><table class="stable"><tr><th>When</th><th>Who</th><th>Wants</th><th>Delivery</th><th></th></tr>' +
     Q.map(q => '<tr><td style="white-space:nowrap">' + new Date(q.createdAt || 0).toLocaleDateString() + '</td>' +
       '<td><b>' + esc(q.name) + '</b><div class="tg">' + esc(q.email) + '</div></td>' +

@@ -154,6 +154,68 @@ site in it. Worth doing before any big redesign.
 
 ---
 
+### Getting inquiries emailed to you
+
+Out of the box, an inquiry lands in Studio → Inquiries and nowhere else. To
+get the whole thing emailed to you instead, four steps, roughly 15 minutes.
+
+**1. Upgrade Firebase to Blaze.** Console → the gear by *Project Overview* →
+**Usage and billing** → **Modify plan** → Blaze. It needs a card. Your actual
+cost will be nothing — the free monthly allowance is millions of operations
+and you will use dozens — but Blaze is pay-as-you-go, so **set a budget alert
+while you are in there**. A few dollars is plenty; it emails you long before
+anything real could happen.
+
+**2. Get an SMTP account.** This is whatever actually sends the mail. Gmail
+works: turn on 2-step verification, then make an **app password** and use
+
+```
+smtps://you%40gmail.com:THEAPPPASSWORD@smtp.gmail.com:465
+```
+
+Note `%40` where the `@` in your address goes. If you type a literal `@`
+there the URI splits in the wrong place and the extension fails to connect,
+with an error that does not explain itself. Resend, SendGrid and Mailgun all
+have free tiers and are less fussy about volume than Gmail.
+
+**3. Install the extension.** Console → **Extensions** → find
+**Trigger Email from Firestore** → Install. When it asks:
+
+| It asks for | Answer |
+|---|---|
+| Email documents collection | `mail` |
+| SMTP connection URI | the string from step 2 |
+| Default FROM address | your shop address |
+| Users / templates collection | leave blank |
+
+The collection **must** be `mail` — that is the name the website writes to and
+the name the security rules allow.
+
+**4. Switch it on in Studio.** Inquiries tab → **Send alerts to** → your
+address → Save. Then send yourself a test inquiry from the live site.
+
+Republish `firestore.rules` as well (section 3) — the `mail` rules are new.
+
+#### What to know about how this works
+
+The website writes the email into a `mail` collection from the visitor's
+browser, and the extension sends whatever it finds there. Two consequences
+worth understanding:
+
+- **Your alert address is public.** The browser has to know where to send it,
+  so the address sits in your site settings, which anyone can read. Use a shop
+  address or an alias, not a private one.
+- **The email is best-effort.** It is queued a split second after the inquiry
+  is saved. If the visitor's connection dies in that instant, you get no
+  email — but the inquiry is still safely in Studio. The list is the record;
+  the email is the nudge.
+
+Both of those go away if the queueing moves to a Cloud Function instead of the
+browser. That needs Node.js installed to deploy it, which this machine does not
+have.
+
+---
+
 ## Things this deliberately does not do
 
 - **No card checkout.** Buyers send an inquiry and you invoice them. Adding
