@@ -170,6 +170,16 @@ That means there's no way to offer an optional extra as a dropdown. If
 something is genuinely take-it-or-leave-it, make "No thanks" one of the
 entries at +$0 — they still have to choose it, which is the point.
 
+**An entry with no name doesn't exist.** If you add a row and leave *shows
+as* blank, it's hidden from your site rather than appearing as an empty line
+someone could pick by mistake. The editor outlines it in red and says so. If
+*every* entry in a group is unnamed, the whole group is skipped — otherwise
+it would be a dropdown nobody could ever answer, and the required check would
+stop anyone buying the piece at all. The items list flags that too.
+
+Sold pieces don't show options. **Ask about something similar** goes straight
+to the form.
+
 **Sizes** are just a "pick one" group. The **+ Sizes** button makes one
 pre-filled with Small / Medium / Large so you only have to edit the prices.
 

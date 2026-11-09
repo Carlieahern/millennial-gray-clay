@@ -172,7 +172,10 @@ footer.site .sp{margin-left:auto}
 /* "You missed this" markers. Fixed colours rather than theme variables: a
    warning has to stay legible whatever palette she picks, and this pair is
    ~8:1 on its own tint. */
-.omiss{border-color:#b3261e}
+/* Element-qualified on purpose: the shared field rule starts with
+   `input:not([type])`, and :not() lends it attribute-selector weight, so a
+   bare `.omiss` loses to it and the red outline never appears at all. */
+input.omiss,select.omiss,textarea.omiss{border-color:#b3261e}
 .ogap,.owarn{background:#fdecea;color:#8c1d18;border-radius:var(--radius-sm)}
 .ogap{display:inline-block;align-self:flex-start;font-size:12.5px;font-weight:500;padding:4px 9px;margin-top:-2px}
 .owarn{padding:12px 16px;margin-bottom:16px;font-size:13.5px;line-height:1.5}
@@ -210,6 +213,9 @@ footer.site .sp{margin-left:auto}
 #studio label.f{color:#6f6659;font-size:11px}
 #studio input,#studio select,#studio textarea{background:#fff;border-color:#d5cdc3;color:#26211c;font-size:14px}
 #studio input:focus,#studio select:focus,#studio textarea:focus{outline-color:#9a5b3f;border-color:#9a5b3f}
+/* `#studio input` outranks a bare `.omiss`, so the red outline needs the id
+   too or it silently loses inside Studio. */
+#studio .omiss{border-color:#b3261e}
 #studio .btn{border-radius:8px;padding:9px 16px;font-size:14px}
 #studio .btn.ghost{color:#4a4238;border-color:#d5cdc3;background:#fff}
 #studio .btn.ghost:hover{border-color:#9a5b3f;color:#9a5b3f}
@@ -922,11 +928,28 @@ function closeModal(){ $("#modal").classList.remove("open"); }
    two different mechanisms.
    ----------------------------------------------------------------------- */
 
+// itemOptions is the raw definition, for the Studio editor.
 const itemOptions = it => (it && it.optionsOn && Array.isArray(it.options)) ? it.options : [];
+
+// An entry she added but never named is not a real choice. Left in the
+// dropdown it renders as a blank line that a customer can select, looks
+// exactly like having chosen nothing, and sails past the required check --
+// so it is filtered out before the storefront ever sees it.
+const usableChoices = g => (g.choices || []).filter(c => String(c.label || "").trim() !== "");
+
+// The groups a customer is actually shown, and so the only ones they can be
+// held to. A group with nothing nameable in it is skipped rather than drawn
+// as a dropdown that can never be satisfied, which would make the piece
+// impossible to buy. Nothing is shown on a sold piece either -- the button
+// there just asks about something similar.
+const liveOptions = it => (it && it.status !== "sold")
+  ? itemOptions(it).filter(g => usableChoices(g).length > 0) : [];
 const groupMax = g => Math.max(1, Math.min(12, num(g.max) || 1));
 const groupCount = (g, s) => g.kind === "count"
   ? Math.max(1, Math.min(groupMax(g), num(s && s.count) || 1)) : 1;
-const findChoice = (g, id) => (g.choices || []).find(c => c.id === id) || null;
+// Deliberately searches the usable entries only, so an id pointing at an
+// unnamed entry resolves to nothing and counts as unanswered.
+const findChoice = (g, id) => usableChoices(g).find(c => c.id === id) || null;
 
 // Room for a real note without letting anyone paste a novel into Firestore.
 // The rules cap `message` at 5000; this stays well under it.
@@ -939,7 +962,7 @@ let optPick = { itemId: null, sel: {}, msg: "", gaps: false };
 
 function defaultSel(it){
   const sel = {};
-  itemOptions(it).forEach(g => {
+  liveOptions(it).forEach(g => {
     const slots = g.kind === "count" ? groupMax(g) : 1;
     const picks = [], texts = [];
     for (let k = 0; k < slots; k++){
@@ -958,7 +981,7 @@ function defaultSel(it){
 // box that a "lets them type" entry revealed filled in.
 function optionGaps(it, sel){
   const gaps = [];
-  itemOptions(it).forEach(g => {
+  liveOptions(it).forEach(g => {
     const s = sel[g.id] || {};
     const n = groupCount(g, s);
     for (let k = 0; k < n; k++){
@@ -977,7 +1000,7 @@ const gapAt = (gaps, gid, k, kind) => gaps.some(x => x.gid === gid && x.k === k 
 
 function priceWith(it, sel){
   let total = num(it.price);
-  itemOptions(it).forEach(g => {
+  liveOptions(it).forEach(g => {
     const s = sel[g.id] || {};
     const n = groupCount(g, s);
     if (g.kind === "count") total += num(g.perExtra) * (n - 1);
@@ -991,7 +1014,7 @@ function priceWith(it, sel){
 
 // One readable line per group, for the inquiry record and the email.
 function optionSummary(it, sel){
-  return itemOptions(it).map(g => {
+  return liveOptions(it).map(g => {
     const s = sel[g.id] || {};
     const n = groupCount(g, s);
     const parts = [];
@@ -1011,7 +1034,7 @@ function optionsHTML(it){
   const sel = optPick.sel;
   const show = !!optPick.gaps;
   const gaps = show ? optionGaps(it, sel) : [];
-  return itemOptions(it).map(g => {
+  return liveOptions(it).map(g => {
     const s = sel[g.id] || {};
     const n = groupCount(g, s);
     const limit = Math.max(1, Math.min(500, num(g.customLimit) || 120));
@@ -1034,7 +1057,7 @@ function optionsHTML(it){
         (g.kind === "count" ? '<span class="onum">' + (k + 1) + '</span>' : '') +
         '<select class="' + (missPick ? "omiss" : "") + '" onchange="optSetPick(\'' + g.id + '\',' + k + ',this.value)">' +
         '<option value=""' + (picked ? "" : " selected") + '>-- choose --</option>' +
-        (g.choices || []).map(ch => '<option value="' + esc(ch.id) + '"' + (ch.id === picked ? " selected" : "") + '>' +
+        usableChoices(g).map(ch => '<option value="' + esc(ch.id) + '"' + (ch.id === picked ? " selected" : "") + '>' +
           esc(ch.label) + (num(ch.add) ? "  +" + money(ch.add) : "") + '</option>').join("") +
         '</select></div>' +
         (missPick ? '<div class="ogap">Pick one of these</div>' : '') +
@@ -1104,7 +1127,7 @@ function optSetText(gid, k, v){
   // throw the cursor out of the textarea. Only the counter needs updating,
   // and the "needs a few words" marker needs clearing by hand because of it.
   const it = state.items.find(x => x.id === optPick.itemId);
-  const g = it && itemOptions(it).find(g => g.id === gid);
+  const g = it && liveOptions(it).find(g => g.id === gid);
   const el = document.getElementById("oc_" + gid + "_" + k);
   if (el && g) el.textContent = v.length + " / " + Math.max(1, Math.min(500, num(g.customLimit) || 120)) + " characters";
   if (el && v.trim()){
@@ -1136,7 +1159,7 @@ function openItem(id){
     : (sh.methods && sh.methods[0] ? "Shipping from " + money(sh.methods[0].price) : "");
   const sold = i.status === "sold";
   optPick = { itemId: i.id, sel: defaultSel(i), msg: "", gaps: false };
-  const hasOpts = itemOptions(i).length > 0;
+  const hasOpts = liveOptions(i).length > 0;
   const info = '<div class="info">' +
     (i.status && i.status !== "available" ? '<span class="badge ' + esc(i.status) + '">' + esc(i.status) + '</span>' : '') +
     '<h2>' + esc(i.title) + '</h2>' +
@@ -1633,8 +1656,14 @@ function tabItems(){
       state.items.map(i => '<tr><td>' + (i.images && i.images[0]
           ? '<img class="th" src="' + esc(i.images[0]) + '">' : '<div class="th" style="width:44px;height:44px;border-radius:6px;background:#eee9e2"></div>') + '</td>' +
         '<td><b>' + esc(i.title) + '</b>' + (i.published === false ? ' <span class="tg">(draft)</span>' : '') +
-          (itemOptions(i).length ? '<div class="tg">' + itemOptions(i).length +
-            (itemOptions(i).length === 1 ? ' choice' : ' choices') + ' to make</div>' : '') + '</td>' +
+          (function(){
+            // Count only the groups a customer would really see, so this
+            // never claims choices that are hidden for being unnamed.
+            const live = itemOptions(i).filter(g => usableChoices(g).length > 0).length;
+            const dead = itemOptions(i).length - live;
+            return (live ? '<div class="tg">' + live + (live === 1 ? ' choice' : ' choices') + ' to make</div>' : '') +
+                   (dead ? '<div class="tg" style="color:#b3261e">' + dead + ' not showing -- needs naming</div>' : '');
+          })() + '</td>' +
         '<td>' + esc(typeName(i.typeId)) + '</td>' +
         '<td>' + (num(i.price) ? money(i.price) : "--") + '</td>' +
         '<td>' + esc(i.status || "available") + '</td>' +
@@ -1756,8 +1785,18 @@ function optionsEditor(){
 
   h += O.map((g, n) => {
     const isCount = g.kind === "count";
-    const anyCustom = (g.choices || []).some(c => c.custom);
+    const anyCustom = usableChoices(g).some(c => c.custom);
+    const blanks = (g.choices || []).length - usableChoices(g).length;
     return '<div class="gbox">' +
+      (usableChoices(g).length === 0
+        ? '<div class="owarn"><b>This group has nothing to pick from, so it will not show on your site.</b> ' +
+          'Give at least one entry a name below, or remove the group. A dropdown with no named entries ' +
+          'could never be answered, and the required check would stop anyone buying the piece at all.</div>'
+        : blanks
+        ? '<div class="owarn"><b>' + blanks + (blanks === 1 ? ' entry has' : ' entries have') + ' no name yet</b> -- ' +
+          (blanks === 1 ? 'it is' : 'they are') + ' hidden from your site until named, so nobody can pick ' +
+          (blanks === 1 ? 'it' : 'them') + ' by accident.</div>'
+        : '') +
       '<div class="srow" style="margin-bottom:12px">' +
         '<input style="flex:1;min-width:160px" placeholder="What to call it, e.g. Donut type" value="' + esc(g.label || "") +
           '" oninput="gSet(' + n + ',\'label\',this.value)">' +
@@ -1792,8 +1831,13 @@ function optionsEditor(){
       '<table class="stable ctable"><tr><th>Shows as</th><th style="width:130px">Adds to price</th>' +
         '<th style="width:150px">Lets them type</th><th style="width:44px"></th></tr>' +
       (g.choices || []).map((c, m) =>
-        '<tr><td><input value="' + esc(c.label) + '" placeholder="e.g. Chocolate glazed" ' +
-            'oninput="cSet(' + n + ',' + m + ',\'label\',this.value)"></td>' +
+        '<tr><td><input class="' + (String(c.label || "").trim() ? "" : "omiss") + '" value="' + esc(c.label) +
+            '" placeholder="Name it, or it will not show" ' +
+            // oninput keeps the value; the redraw waits for onchange (blur),
+            // because rebuilding the modal on every keystroke would take the
+            // cursor with it.
+            'oninput="cSet(' + n + ',' + m + ',\'label\',this.value)" ' +
+            'onchange="cSet(' + n + ',' + m + ',\'label\',this.value,1)"></td>' +
           '<td><input type="number" step="0.01" value="' + num(c.add) + '" ' +
             'oninput="cSet(' + n + ',' + m + ',\'add\',+this.value)"></td>' +
           '<td><label class="srow" style="gap:8px"><span class="sw"><input type="checkbox" ' + (c.custom ? "checked" : "") +
