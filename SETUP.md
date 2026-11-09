@@ -106,7 +106,7 @@ Sign in with the account from step 2. `Ctrl+S` saves.
 | **Price calculator** | What to charge, worked backwards from real costs |
 | **Shipping** | Delivery options, packaging cost, free-shipping threshold, local pickup |
 | **Socials** | Profile links, plus posts you pin by pasting embed codes |
-| **Inquiries** | Everyone who asked to buy something |
+| **Inquiries** | Everyone who asked to buy something, with an unread count and alerts |
 | **Setup** | Backup/restore, reset the design |
 
 ### The price calculator
@@ -154,10 +154,39 @@ site in it. Worth doing before any big redesign.
 
 ---
 
-### Getting inquiries emailed to you
+### Knowing when an inquiry arrives
 
-Out of the box, an inquiry lands in Studio → Inquiries and nowhere else. To
-get the whole thing emailed to you instead, four steps, roughly 15 minutes.
+This is already on. Nothing to set up, nothing to pay for.
+
+Any inquiry you haven't looked at yet shows as a **number** in three places,
+and all three only appear when you're signed in — a visitor never sees them:
+
+- on the **Studio** link at the foot of your own site
+- on the **Inquiries** tab inside Studio
+- in the browser tab itself, as `(2) Millennial Gray Clay`, so you can see it
+  from another tab without clicking in
+
+The tick button on a row marks it seen and drops the count; the arrow puts it
+back to new if you'd rather deal with it later. **Mark all as seen** clears
+the lot. "Seen" is stored on the inquiry, not in your browser, so the count
+is the same on your phone and your laptop.
+
+If you happen to have the site open in a tab when one lands, you also get a
+chime and, if you switch it on, a pop-up in the corner of your screen.
+Both live in Studio → Inquiries, under *While you have the site open*. They
+are remembered **per device** rather than in your site settings, so your
+laptop can chime while your phone stays quiet, and nothing about them is
+published. **Show me one** fires a fake alert so you can see what it looks
+like without putting a test inquiry in your database.
+
+Those two only work while the site is actually open. Close it and you're back
+to the counters, which are always right whenever you come back.
+
+### Getting inquiries emailed to you (optional, needs Blaze)
+
+You don't need this — the counters above cover it for free. This is for when
+you want the whole inquiry pushed to your inbox without opening the site at
+all. Four steps, roughly 15 minutes, and it needs a card on file.
 
 **1. Upgrade Firebase to Blaze.** Console → the gear by *Project Overview* →
 **Usage and billing** → **Modify plan** → Blaze. It needs a card. Your actual

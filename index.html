@@ -92,6 +92,12 @@ section.sect{padding:var(--sect-pad) 0;position:relative}
 .badge{display:inline-block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--surface2);color:var(--dim);border:1px solid var(--border)}
 .badge.sold{background:#2b2b2b;color:#fff;border-color:#2b2b2b}
 .badge.reserved{background:#b8862b;color:#fff;border-color:#b8862b}
+/* Unread-inquiry counter. It appears on the storefront footer's Studio button
+   AND in the light Studio sidebar, so it cannot use theme variables -- it has
+   to read against whatever palette she picks and against white. Fixed
+   terracotta with white text does both (~5.4:1 either way). */
+.nbadge{display:inline-block;min-width:17px;padding:1px 6px;border-radius:999px;background:#9a5b3f;color:#fff;
+  font:600 11px/1.6 'Inter',sans-serif;letter-spacing:0;text-align:center;text-decoration:none}
 .card .ph .corner{position:absolute;top:10px;left:10px;z-index:2}
 .empty{border:1px dashed var(--border);border-radius:var(--radius);padding:52px 24px;text-align:center;color:var(--dim)}
 
@@ -158,6 +164,9 @@ footer.site .sp{margin-left:auto}
 .sbar button{text-align:left;background:none;border:0;color:#5f5649;font:inherit;padding:9px 12px;border-radius:8px;cursor:pointer;display:flex;gap:9px;align-items:center}
 .sbar button:hover{background:#f1ece6;color:#1f1b17}
 .sbar button.on{background:#9a5b3f;color:#fff}
+/* On the selected tab the sidebar is already terracotta, so the counter has
+   to invert or it vanishes into the background. */
+.sbar button.on .nbadge{background:#fff;color:#9a5b3f}
 .sbar .sp{margin-top:auto}
 .sbar .mini{font-size:11px;color:#6f6659;padding:10px;line-height:1.5}
 .spane{overflow:auto;padding:30px 34px 70px}
@@ -172,6 +181,11 @@ footer.site .sp{margin-left:auto}
 #studio .btn.ghost{color:#4a4238;border-color:#d5cdc3;background:#fff}
 #studio .btn.ghost:hover{border-color:#9a5b3f;color:#9a5b3f}
 .srow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.srow .sp{margin-left:auto}
+/* "optional" tag on a Studio heading. Not .badge -- that one is built from the
+   storefront's theme variables and would take on whatever palette she picks. */
+.opt{display:inline-block;font:500 10.5px/1.6 'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 9px;border-radius:999px;background:#f1ece6;color:#6f6659;border:1px solid #ddd5cb;vertical-align:2px}
 .swatch{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #d5cdc3;border-radius:8px;padding:6px 10px}
 .swatch input[type=color]{width:30px;height:30px;padding:0;border:0;background:none;cursor:pointer;border-radius:6px}
 .swatch span{font-size:12.5px;color:#5f5649}
@@ -198,6 +212,12 @@ footer.site .sp{margin-left:auto}
 .stable th{text-align:left;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#6f6659;padding:0 10px 9px;font-weight:600}
 .stable td{padding:10px;border-top:1px solid #eae4dc;vertical-align:middle}
 .stable tr:hover td{background:#faf8f5}
+/* An inquiry she has not looked at yet: warm tint plus a bar down the left,
+   so it reads as unread even if the "New" pill is scrolled off. */
+.stable tr.qnew td{background:#fdf6e7}
+.stable tr.qnew:hover td{background:#fbf1dc}
+.stable tr.qnew td:first-child{box-shadow:inset 3px 0 0 #9a5b3f}
+.qacts{display:flex;gap:6px;justify-content:flex-end}
 .stable img.th{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#eee9e2}
 .calc-out{background:#faf8f5;border:1px solid #e4ded6;border-radius:10px;padding:18px}
 .cline{display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:14px;color:#5f5649}
@@ -254,7 +274,7 @@ footer.site .sp{margin-left:auto}
     <div class="wrap">
       <span id="footText"></span>
       <span class="sp"></span>
-      <button class="linkish" onclick="openStudio()">Studio</button>
+      <button class="linkish" id="studioBtn" onclick="openStudio()">Studio</button>
     </div>
   </footer>
 </div>
@@ -423,7 +443,15 @@ const store = {
       firebase.initializeApp(FIREBASE_CONFIG);
       db = firebase.firestore(); auth = firebase.auth();
       state.mode = "cloud";
-      auth.onAuthStateChanged(u => { state.user = u; if (studioOpen()) renderStudio(); });
+      auth.onAuthStateChanged(u => {
+        state.user = u;
+        // Only a signed-in account is allowed to read inquiries, so the
+        // listener has to start here rather than at init -- attached before
+        // sign-in it is refused once and never recovers.
+        u ? watchInquiries() : unwatchInquiries();
+        renderAlerts();
+        if (studioOpen()) renderStudio();
+      });
       db.collection("site").doc("settings").onSnapshot(d => {
         state.settings = d.exists ? deepMerge(DEFAULTS, d.data()) : clone(DEFAULTS);
         applyTheme(); renderSite(); if (studioOpen()) renderStudio();
@@ -438,11 +466,6 @@ const store = {
                             .sort((a,b)=>(a.order||0)-(b.order||0));
         renderSite(); if (studioOpen()) renderStudio();
       }, e => cloudError(e));
-      db.collection("inquiries").onSnapshot(s => {
-        state.inquiries = s.docs.map(d => Object.assign({ id:d.id }, d.data()))
-                                .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-        if (studioOpen()) renderStudio();
-      }, () => {});
     } catch(e){ console.error(e); state.mode="local"; this.initLocal(); toast("Cloud unavailable -- using local preview"); }
   },
   initLocal(){
@@ -489,11 +512,34 @@ const store = {
   async addInquiry(q){
     q.createdAt = Date.now(); q.status = "new";
     if (state.mode === "cloud") await db.collection("inquiries").add(q);
-    else { q.id = uid("q_"); state.inquiries.unshift(q); lsWrite({ inquiries: state.inquiries }); }
+    else { q.id = uid("q_"); state.inquiries.unshift(q); lsWrite({ inquiries: state.inquiries }); renderAlerts(); }
   },
   async delInquiry(id){
     if (state.mode === "cloud") await db.collection("inquiries").doc(id).delete();
     else { state.inquiries = state.inquiries.filter(x => x.id !== id); lsWrite({ inquiries: state.inquiries }); }
+  },
+
+  // "Seen" is just status flipped from "new". Kept on the inquiry itself
+  // rather than in this browser, so the count is the same on her phone and
+  // her laptop. Only a signed-in account can write it (see firestore.rules).
+  async seenInquiry(id, seen){
+    const q = state.inquiries.find(x => x.id === id);
+    if (!q) return;
+    q.status = seen ? "seen" : "new";
+    if (state.mode === "cloud") await db.collection("inquiries").doc(id).update({ status: q.status });
+    else lsWrite({ inquiries: state.inquiries });
+  },
+  async seenAllInquiries(){
+    const open = state.inquiries.filter(q => q.status === "new");
+    if (!open.length) return;
+    if (state.mode === "cloud"){
+      // One batch, so the badge drops in a single step instead of ticking down.
+      const b = db.batch();
+      open.forEach(q => b.update(db.collection("inquiries").doc(q.id), { status: "seen" }));
+      await b.commit();
+    }
+    open.forEach(q => q.status = "seen");
+    if (state.mode !== "cloud") lsWrite({ inquiries: state.inquiries });
   },
 
   // Drop a letter in the outbox that the Firebase "Trigger Email" extension
@@ -510,6 +556,131 @@ function cloudError(e){
   console.error(e);
   if (e && e.code === "permission-denied") toast("Firestore rules are blocking reads -- see SETUP.md step 3");
   else toast("Cloud read failed: " + (e.message || e.code || "unknown"));
+}
+
+/* =======================================================================
+   5b. NEW-INQUIRY ALERTS
+   No Blaze, no SMTP, no cost: an unread count that follows her around the
+   site, plus a live ping if she happens to have a tab open.
+   ======================================================================= */
+
+const newInquiries = () => state.inquiries.filter(q => q.status === "new");
+
+// True when this browser is hers: signed in, or local preview where there is
+// no auth at all. Everything below is gated on it.
+const mineToSee = () => state.mode !== "cloud" || !!state.user;
+
+// The count in the tab title and on the footer's Studio button. A visitor
+// must never learn how many inquiries are waiting, so this checks the
+// session rather than just the number.
+function renderAlerts(){
+  const name = (state.settings.content && state.settings.content.siteName) || "Art Shop";
+  const n = mineToSee() ? newInquiries().length : 0;
+  document.title = (n ? "(" + n + ") " : "") + name;
+  const b = $("#studioBtn");
+  if (b) b.innerHTML = "Studio" + (n ? ' <span class="nbadge">' + n + '</span>' : '');
+}
+
+let inqUnsub = null, inqPrimed = false;
+function watchInquiries(){
+  if (inqUnsub) return;
+  inqPrimed = false;
+  inqUnsub = db.collection("inquiries").onSnapshot(s => {
+    // The very first snapshot is the backlog, not news. Pinging for it would
+    // mean a chime every single time she opens the site.
+    const fresh = inqPrimed ? s.docChanges().filter(c => c.type === "added").map(c => c.doc.data()) : [];
+    inqPrimed = true;
+    state.inquiries = s.docs.map(d => Object.assign({ id:d.id }, d.data()))
+                            .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    renderAlerts();
+    if (studioOpen()) renderStudio();
+    if (fresh.length) pingNew(fresh);
+  }, e => console.warn("Inquiries listener stopped:", (e && e.code) || e));
+}
+function unwatchInquiries(){
+  if (inqUnsub) inqUnsub();
+  inqUnsub = null; inqPrimed = false;
+  state.inquiries = [];
+  renderAlerts();
+}
+
+// Her own preferences for this one device, kept in localStorage on purpose:
+// site settings are world-readable, and her laptop may want a chime while her
+// phone stays silent.
+const ALERT_LS = "mgc_alerts_v1";
+function alertPrefs(){
+  try { return Object.assign({ desktop:false, sound:true }, JSON.parse(localStorage.getItem(ALERT_LS) || "{}")); }
+  catch(e){ return { desktop:false, sound:true }; }
+}
+function setAlertPref(k, v){
+  const p = alertPrefs(); p[k] = v;
+  try { localStorage.setItem(ALERT_LS, JSON.stringify(p)); } catch(e){}
+  if (studioOpen()) renderStudio();
+}
+
+function pingNew(docs){
+  const p = alertPrefs();
+  const one = docs.length === 1 ? docs[0] : null;
+  const line = one ? "New inquiry from " + (one.name || "your website")
+                   : docs.length + " new inquiries";
+  toast(line);
+  if (p.sound) chime();
+  if (p.desktop && "Notification" in window && Notification.permission === "granted"){
+    try {
+      const body = one ? ((one.itemTitle ? "Wants: " + one.itemTitle + "\n" : "") +
+                          String(one.message || "").slice(0, 160)).trim() || "Open Studio to read it."
+                       : "Open Studio to read them.";
+      const nf = new Notification(line, { body: body, tag: "mgc-inquiry" });
+      nf.onclick = () => { window.focus(); state.studioTab = "inbox"; openStudio(); nf.close(); };
+    } catch(e){ /* a few browsers refuse constructed notifications; the toast already fired */ }
+  }
+}
+
+// Two short notes, synthesised in the browser so there is no sound file to
+// host and nothing extra to load.
+function chime(){
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ac = new AC();
+    [[880, 0], [1174.66, 0.13]].forEach(pair => {
+      const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + pair[1];
+      o.type = "sine"; o.frequency.value = pair[0];
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.13, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t); o.stop(t + 0.34);
+    });
+    setTimeout(() => { try { ac.close(); } catch(e){} }, 1000);
+  } catch(e){}
+}
+
+async function askDesktopAlerts(){
+  if (!("Notification" in window)) return toast("This browser has no desktop notifications");
+  let perm = Notification.permission;
+  if (perm === "default"){
+    try { perm = await Notification.requestPermission(); } catch(e){ perm = Notification.permission; }
+  }
+  if (perm === "granted"){ setAlertPref("desktop", true); chime(); toast("Desktop alerts on"); }
+  else { setAlertPref("desktop", false); toast("Your browser is blocking notifications for this site"); }
+}
+
+// Lets her see exactly what an alert looks like without putting a fake
+// inquiry in her database.
+function testAlert(){
+  pingNew([{ name: "Test run", itemTitle: "", message: "This is what a new inquiry looks like." }]);
+}
+
+async function qSeen(id, seen){
+  try { await store.seenInquiry(id, seen); }
+  catch(e){ toast("Could not update that: " + ((e && e.code) || "unknown")); }
+  renderAlerts(); renderStudio();
+}
+async function qSeenAll(){
+  try { await store.seenAllInquiries(); toast("All marked as seen"); }
+  catch(e){ toast("Could not update those: " + ((e && e.code) || "unknown")); }
+  renderAlerts(); renderStudio();
 }
 
 /* =======================================================================
@@ -540,7 +711,7 @@ function applyTheme(){
   const d = DENSITY[t.density] || DENSITY.comfortable;
   r.setProperty("--sect-pad", d[0] + "px"); r.setProperty("--gap", d[1] + "px");
   document.body.className = "tx-" + t.texture + " frame-" + t.frame;
-  document.title = state.settings.content.siteName || "Art Shop";
+  renderAlerts();   // owns document.title, so the unread count survives a theme change
 }
 
 /* =======================================================================
@@ -882,11 +1053,11 @@ function dirty(v){
 }
 
 function renderStudio(){
-  const n = state.inquiries.filter(q => q.status === "new").length;
+  const n = newInquiries().length;
   $("#sbar").innerHTML =
     '<div class="logo">' + esc(state.settings.content.siteName) + '<small>Studio</small></div>' +
     TABS.map(t => '<button class="' + (state.studioTab === t[0] ? "on" : "") + '" onclick="studioTab(\'' + t[0] + '\')">' +
-      t[1] + (t[0] === "inbox" && n ? ' <span class="badge" style="background:#9a5b3f;color:#fff;border:0">' + n + '</span>' : '') +
+      t[1] + (t[0] === "inbox" && n ? ' <span class="nbadge">' + n + '</span>' : '') +
       '</button>').join("") +
     '<div class="sp"></div>' +
     '<button onclick="closeStudio()">&larr; View site</button>' +
@@ -1482,29 +1653,88 @@ async function postSave(){
 
 /* ---------------- INQUIRIES ---------------- */
 function tabInbox(){
-  const Q = state.inquiries;
+  const Q = state.inquiries, n = newInquiries().length;
+  const p = alertPrefs();
+  const canNotify = "Notification" in window;
+  const perm = canNotify ? Notification.permission : "unsupported";
   const notify = state.settings.notifyEmail || "";
+
   return '<h2>Inquiries</h2><p class="sub">Everyone who has asked to buy something. Reply from your own email -- this page is the record.</p>' +
-  '<div class="sbox"><h3>Email me each new inquiry</h3>' +
-    '<div class="field" style="max-width:400px"><label class="f">Send alerts to</label>' +
-    '<input type="email" value="' + esc(notify) + '" placeholder="you@example.com" oninput="setNotify(this.value)"></div>' +
-    '<div class="hint">' + (notify
-      ? 'Every new inquiry gets emailed here with the whole message in it. This only works once the <b>Trigger Email</b> extension is installed in Firebase -- SETUP.md walks through it. Until then nothing is lost: inquiries still land in the list below, they just do not email.'
-      : 'Blank means no emails at all -- inquiries appear in the list below and nowhere else.') + '</div>' +
-    '<div class="hint"><b>Worth knowing before you fill this in:</b> the address is kept in your site settings, and those are public. Anyone determined enough can read it. Use a shop address or an alias rather than a private one.</div>' +
+
+  // ---- the free, no-Blaze alerts ----
+  '<div class="sbox"><h3>How you get told</h3>' +
+    '<div class="hint" style="margin-top:0">Nothing to set up and nothing to pay for. Any inquiry you have not looked at yet shows as a number ' +
+      'in three places: on the <b>Studio</b> link at the foot of your site, on the <b>Inquiries</b> tab here, and in the browser tab ' +
+      'itself as <code>(2) ' + esc(state.settings.content.siteName || "Your shop") + '</code> -- so you can see it from another tab without clicking in.</div>' +
+    '<div class="hint">' + (n
+      ? '<b>Right now: ' + n + ' waiting.</b>'
+      : 'Right now: nothing waiting.') + '</div>' +
+
+    '<h3 style="margin-top:22px">While you have the site open</h3>' +
+    '<label class="srow" style="gap:9px;margin:4px 0 12px"><span class="sw">' +
+      '<input type="checkbox" ' + (p.sound ? "checked" : "") + ' onchange="setAlertPref(\'sound\',this.checked)"><i></i></span>' +
+      '<span>Play a chime when one arrives</span></label>' +
+
+    (perm === "granted" && p.desktop
+      ? '<div class="cline"><span>Desktop pop-up</span><b>On for this device</b></div>' +
+        '<div style="margin-top:10px"><button class="btn ghost" onclick="setAlertPref(\'desktop\',false)">Turn pop-ups off</button> ' +
+        '<button class="btn ghost" onclick="testAlert()">Show me one</button></div>'
+      : perm === "denied"
+      ? '<div class="hint"><b>Desktop pop-ups are blocked</b> for this site in your browser settings, so only the chime and the counters will work. ' +
+        'To change it, click the padlock in the address bar &rsaquo; Notifications &rsaquo; Allow, then come back.</div>' +
+        '<div style="margin-top:10px"><button class="btn ghost" onclick="testAlert()">Show me one</button></div>'
+      : !canNotify
+      ? '<div class="hint">This browser cannot do desktop pop-ups. The chime and the counters still work.</div>'
+      : '<div style="margin-top:10px"><button class="btn" onclick="askDesktopAlerts()">Turn on desktop pop-ups</button> ' +
+        '<button class="btn ghost" onclick="testAlert()">Show me one</button></div>' +
+        '<div class="hint">A pop-up in the corner of your screen, even when this tab is behind something else. Your browser will ask permission first.</div>') +
+
+    '<div class="hint" style="margin-top:14px">These two are remembered <b>per device</b>, not in your site settings -- so your laptop can chime ' +
+      'while your phone stays quiet, and none of it is published. They only work while the site is actually open in a tab; close it and ' +
+      'you are back to the counters, which are always right whenever you come back.</div>' +
   '</div>' +
-  (Q.length ? '<div class="sbox"><table class="stable"><tr><th>When</th><th>Who</th><th>Wants</th><th>Delivery</th><th></th></tr>' +
-    Q.map(q => '<tr><td style="white-space:nowrap">' + new Date(q.createdAt || 0).toLocaleDateString() + '</td>' +
+
+  // ---- the list ----
+  (Q.length ? '<div class="sbox">' +
+    (n ? '<div class="srow" style="margin:-4px 0 12px"><b>' + n + (n === 1 ? ' inquiry' : ' inquiries') + ' you have not looked at</b>' +
+         '<span class="sp"></span><button class="btn ghost" onclick="qSeenAll()">Mark all as seen</button></div>' : '') +
+    '<table class="stable"><tr><th>When</th><th>Who</th><th>Wants</th><th>Delivery</th><th></th></tr>' +
+    Q.map(q => '<tr' + (q.status === "new" ? ' class="qnew"' : '') + '>' +
+      '<td style="white-space:nowrap">' + new Date(q.createdAt || 0).toLocaleDateString() +
+        (q.status === "new" ? '<div><span class="nbadge">New</span></div>' : '') + '</td>' +
       '<td><b>' + esc(q.name) + '</b><div class="tg">' + esc(q.email) + '</div></td>' +
       '<td>' + (q.itemTitle ? esc(q.itemTitle) + (q.itemPrice ? ' <span class="tg">' + money(q.itemPrice) + '</span>' : '') : '<span class="tg">General question</span>') +
         (q.message ? '<div class="tg" style="max-width:330px;white-space:pre-wrap">' + esc(q.message) + '</div>' : '') + '</td>' +
       '<td>' + esc(q.shipping || "--") + '</td>' +
-      '<td style="text-align:right;white-space:nowrap">' +
+      // .iconbtn is display:grid, so these need a flex row of their own or
+      // they stack down the cell and stretch the whole row.
+      '<td><div class="qacts">' +
+        '<button class="iconbtn" title="' + (q.status === "new" ? 'Mark as seen' : 'Mark as new again') + '" ' +
+          'onclick="qSeen(\'' + q.id + '\',' + (q.status === "new" ? 'true' : 'false') + ')">' +
+          (q.status === "new" ? '&#10003;' : '&#8634;') + '</button>' +
         '<a class="iconbtn" style="text-decoration:none" title="Reply" href="mailto:' + esc(q.email) +
-          '?subject=' + encodeURIComponent("Re: " + (q.itemTitle || "your inquiry")) + '">&#9993;</a> ' +
-        '<button class="iconbtn del" onclick="qDel(\'' + q.id + '\')">&times;</button></td></tr>').join("") +
-    '</table></div>'
-   : '<div class="sbox"><div class="hint">No inquiries yet.</div></div>');
+          '?subject=' + encodeURIComponent("Re: " + (q.itemTitle || "your inquiry")) + '">&#9993;</a>' +
+        '<button class="iconbtn del" title="Delete" onclick="qDel(\'' + q.id + '\')">&times;</button>' +
+      '</div></td></tr>').join("") +
+    '</table>' +
+    '<div class="hint">The tick marks one as seen and drops the count. The arrow puts it back to new if you want to deal with it later.</div>' +
+    '</div>'
+   : '<div class="sbox"><div class="hint">No inquiries yet.</div></div>') +
+
+  // ---- email, now clearly the optional extra ----
+  '<div class="sbox"><h3>Also email them to me <span class="opt">optional</span></h3>' +
+    '<div class="hint" style="margin-top:0">You do not need this. The counters above cost nothing, and this needs Firebase on the ' +
+      '<b>Blaze</b> pay-as-you-go plan plus an email account to send through -- so leave it until you want it. Full steps are in ' +
+      '<code>SETUP.md</code> under "Getting inquiries emailed to you".</div>' +
+    '<div class="field" style="max-width:400px;margin-top:16px"><label class="f">Send alerts to</label>' +
+    '<input type="email" value="' + esc(notify) + '" placeholder="you@example.com" oninput="setNotify(this.value)"></div>' +
+    '<div class="hint">' + (notify
+      ? 'Set. Each new inquiry gets emailed here in full -- but only once the <b>Trigger Email</b> extension is installed in Firebase. ' +
+        'Until then nothing is lost: they still land in the list above, they just do not email.'
+      : 'Blank, so no emails are sent and nothing extra is published. This is the setting to leave alone for now.') + '</div>' +
+    (notify ? '<div class="hint"><b>One catch:</b> the address has to be readable by your visitors\' browsers, so it sits in your public ' +
+      'site settings. Use a shop address or an alias rather than a private one.</div>' : '') +
+  '</div>';
 }
 async function qDel(id){ if (!confirm("Delete this inquiry?")) return; await store.delInquiry(id); renderStudio(); }
 
