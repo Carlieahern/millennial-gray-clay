@@ -363,7 +363,7 @@ const FIREBASE_CONFIG = {
 const DEFAULTS = {
   theme: {
     bg:"#f6f4f1", surface:"#ffffff", surface2:"#eceae6", text:"#26262b", dim:"#6e6e76",
-    accent:"#8b8d86", accentText:"#ffffff", border:"#dcdad5",
+    accent:"#6e706a", accentText:"#ffffff", border:"#dcdad5",
     fontHead:"Fraunces", fontBody:"Inter",
     headStyle:"normal", radius:14, btnShape:"pill", texture:"none",
     divider:"line", frame:"none", density:"comfortable", heroLayout:"split", width:1120
@@ -1436,14 +1436,19 @@ function setNotify(v){ state.settings.notifyEmail = v.trim(); dirty(true); }
 function setPrice(k, v){ state.settings.pricing[k] = v; dirty(true); calcRun(); }
 
 /* ---------------- LOOK & FEEL ---------------- */
+// Each accent has to clear 4.5:1 twice over: against accentText, because it
+// is a button with words on it, and against bg, because .btn.ghost:hover
+// paints the accent straight onto the page. Gray clay, Sage, Terracotta and
+// Blush were all darkened for this -- same hue and saturation, lower
+// lightness. Check both before adding a palette.
 const PRESETS = {
-  "Gray clay":  { bg:"#f6f4f1", surface:"#ffffff", surface2:"#eceae6", text:"#26262b", dim:"#6e6e76", accent:"#8b8d86", accentText:"#ffffff", border:"#dcdad5" },
+  "Gray clay":  { bg:"#f6f4f1", surface:"#ffffff", surface2:"#eceae6", text:"#26262b", dim:"#6e6e76", accent:"#6e706a", accentText:"#ffffff", border:"#dcdad5" },
   "Warm linen": { bg:"#faf7f2", surface:"#ffffff", surface2:"#f3ede4", text:"#23201c", dim:"#6f675d", accent:"#9a5b3f", accentText:"#ffffff", border:"#e2d9cc" },
   "Studio white":{ bg:"#ffffff", surface:"#ffffff", surface2:"#f4f4f5", text:"#18181b", dim:"#71717a", accent:"#18181b", accentText:"#ffffff", border:"#e4e4e7" },
-  "Sage":       { bg:"#f4f6f2", surface:"#ffffff", surface2:"#e8ede4", text:"#22271f", dim:"#64705e", accent:"#5f7a52", accentText:"#ffffff", border:"#d7e0d0" },
+  "Sage":       { bg:"#f4f6f2", surface:"#ffffff", surface2:"#e8ede4", text:"#22271f", dim:"#64705e", accent:"#5d7750", accentText:"#ffffff", border:"#d7e0d0" },
   "Ink":        { bg:"#17171a", surface:"#1f1f24", surface2:"#26262c", text:"#f2f2f3", dim:"#a1a1aa", accent:"#c8a06a", accentText:"#1a1a1d", border:"#32323a" },
-  "Terracotta": { bg:"#fdf6f1", surface:"#ffffff", surface2:"#f7e8dd", text:"#2d211a", dim:"#7a6358", accent:"#c05f3c", accentText:"#ffffff", border:"#ecd9ca" },
-  "Blush":      { bg:"#fdf7f7", surface:"#ffffff", surface2:"#f8ebeb", text:"#2b2124", dim:"#796369", accent:"#b3697a", accentText:"#ffffff", border:"#eed9dc" }
+  "Terracotta": { bg:"#fdf6f1", surface:"#ffffff", surface2:"#f7e8dd", text:"#2d211a", dim:"#7a6358", accent:"#b05737", accentText:"#ffffff", border:"#ecd9ca" },
+  "Blush":      { bg:"#fdf7f7", surface:"#ffffff", surface2:"#f8ebeb", text:"#2b2124", dim:"#796369", accent:"#aa586b", accentText:"#ffffff", border:"#eed9dc" }
 };
 const COLOR_KEYS = [
   ["bg","Page background"], ["surface","Cards"], ["surface2","Soft blocks"],
