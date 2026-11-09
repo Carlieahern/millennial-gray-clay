@@ -101,7 +101,7 @@ Sign in with the account from step 2. `Ctrl+S` saves.
 |---|---|
 | **Look & feel** | Site name, 8 colors (or a one-click preset), fonts, corners, texture, dividers, photo framing, spacing, page width |
 | **Sections** | The tabs across the top. Add, rename, reorder, hide, delete. Seven kinds: hero, shop grid, about, socials, contact form, text block, photo gallery |
-| **Items** | Everything for sale. Photos, price, status, draft/published |
+| **Items** | Everything for sale. Photos, price, status, draft/published, and per-item options |
 | **Item types** | Mugs vs. originals vs. prints — each type has its own detail fields |
 | **Price calculator** | What to charge, worked backwards from real costs |
 | **Shipping** | Delivery options, packaging cost, free-shipping threshold, local pickup |
@@ -128,6 +128,52 @@ checking a number you already had in mind.
 
 Open an item → **Price this with the calculator** → **Use this price** pushes
 the number onto the item and remembers the costing behind it.
+
+### Giving an item options
+
+Most pieces are bought exactly as they are. For the ones that aren't, open the
+item and switch on **This one has choices to make**.
+
+There are only two kinds of group, and everything is built from them:
+
+| Kind | What it does | Good for |
+|---|---|---|
+| **Pick one** | A single dropdown | Size, glaze, finish, stand |
+| **Pick how many, then pick each** | "How many?" from 1 to a number you set, then that many dropdowns | The donut sculpture — choose 3, then choose each donut |
+
+Every entry in a dropdown has an **adds to price** box. Leave it at 0 for the
+ones that cost the same. A "how many" group also has **each one after the
+first adds** — the item's own price covers the first one.
+
+So a $40 donut tower, $12 per extra donut, with gold leaf at +$15:
+three donuts, one of them gold, comes to $40 + $12 + $12 + $15 = **$79**.
+If you'd rather charge flat per unit instead, put the full price in the
+"each one after the first" box and the sums work the other way round.
+
+The price on the page updates as the customer chooses, and what they picked
+comes through on the inquiry with the total already worked out — in Studio →
+Inquiries and in the alert email, if you've set that up.
+
+**Letting them type something.** Switch on **lets them type** against any
+entry — call it "Custom" — and a text box appears when they pick it. Set
+**characters they get** to whatever suits that piece; it's per group, so a
+short engraving and a long description can live on different items.
+
+**Making a choice skippable.** Turn off **they have to choose** and the
+dropdown gains a `-- none --` entry, which it starts on. Use it for add-ons
+like a stand, so nobody is pushed into buying one.
+
+**Sizes** are just a "pick one" group. The **+ Sizes** button makes one
+pre-filled with Small / Medium / Large so you only have to edit the prices.
+
+Switching the whole thing back off hides the options from your site but keeps
+the groups, so you can turn them on again later without rebuilding them.
+
+> **Republish `firestore.rules` before you rely on this** (section 3). The
+> rules now have to let an inquiry carry the choices, and they got stricter
+> at the same time: an inquiry may only contain the fields the form actually
+> sends, and it can't arrive pre-marked as already seen. Until you republish,
+> inquiries with options on them will be rejected.
 
 ### Pinning a social post
 

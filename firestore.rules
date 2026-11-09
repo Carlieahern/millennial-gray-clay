@@ -36,15 +36,27 @@ service cloud.firestore {
 
     // Contact / buy inquiries. Visitors may drop one in and nothing else:
     // they cannot read, edit or delete any of them, including their own.
+    //
+    // hasOnly matters here: without it any field at all could be attached to
+    // an inquiry, at any size, and the caps below would be decoration.
+    // `status` is pinned to 'new' so nobody can post one pre-marked as seen
+    // and slip past the unread count in Studio.
     match /inquiries/{id} {
-      allow create: if request.resource.data.name is string
+      allow create: if request.resource.data.keys().hasOnly(
+                         ['name', 'email', 'message', 'shipping', 'itemId',
+                          'itemTitle', 'itemPrice', 'options', 'optionsTotal',
+                          'createdAt', 'status'])
+                    && request.resource.data.name is string
                     && request.resource.data.name.size() > 0
                     && request.resource.data.name.size() < 200
                     && request.resource.data.email is string
                     && request.resource.data.email.size() < 320
+                    && request.resource.data.get('status', '') == 'new'
                     && request.resource.data.get('message', '').size() < 5000
                     && request.resource.data.get('shipping', '').size() < 200
-                    && request.resource.data.get('itemTitle', '').size() < 300;
+                    && request.resource.data.get('itemTitle', '').size() < 300
+                    && request.resource.data.get('itemId', '').size() < 80
+                    && request.resource.data.get('options', []).size() <= 12;
       allow read, update, delete: if signedIn();
     }
 

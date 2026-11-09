@@ -113,7 +113,11 @@ section.sect{padding:var(--sect-pad) 0;position:relative}
 .embed-card .cap{font-size:13.5px;color:var(--dim);padding:8px 4px 2px}
 
 label.f{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-weight:500}
-input[type=text],input[type=email],input[type=number],input[type=password],input[type=url],select,textarea{
+/* input:not([type]) matters: a bare <input> defaults to text but matches none
+   of the [type=...] selectors, so every field written without an explicit
+   type -- the inquiry form's name box, most of Look & feel -- was falling
+   back to the browser's own unstyled control. */
+input:not([type]),input[type=text],input[type=email],input[type=number],input[type=password],input[type=url],select,textarea{
   width:100%;font:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
   background:var(--surface);color:var(--text)}
 textarea{resize:vertical;min-height:96px}
@@ -129,7 +133,10 @@ footer.site .wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
 footer.site .sp{margin-left:auto}
 .linkish{background:none;border:0;font:inherit;color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0}
 
-.modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(20,16,12,.55)}
+/* Above #studio (300), below the toast (400). At 200 it sat behind the Studio
+   panel, which is the only place the item editor can be opened from -- the
+   editor was rendering correctly and was simply invisible. */
+.modal{position:fixed;inset:0;z-index:350;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(20,16,12,.55)}
 .modal.open{display:flex}
 .modal-box{background:var(--surface);border-radius:var(--radius);max-width:940px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 24px 70px rgba(0,0,0,.3);position:relative}
 .modal-box.narrow{max-width:460px}
@@ -146,6 +153,23 @@ footer.site .sp{margin-left:auto}
 .spec{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14.5px}
 .spec span:first-child{color:var(--dim)}
 .bigprice{font-size:26px;font-weight:600;font-family:var(--font-head);margin:18px 0 6px}
+/* Item options on the storefront. Themed, since these sit on her site and
+   have to follow whatever palette she picks -- unlike the Studio editor. */
+.optwrap{margin:18px 0 22px;display:flex;flex-direction:column;gap:18px}
+.ogroup{display:flex;flex-direction:column;gap:7px}
+.ohelp{font-size:12.5px;color:var(--dim);line-height:1.5}
+.orow{display:flex;align-items:center;gap:9px}
+.orow select{flex:1}
+/* --dim on --surface2 lands at 4.2:1 with the default palette, just under AA,
+   so these two keep the pairings the rest of the site uses: full-strength
+   text on surface2, and dim only on plain surface. */
+.onum{flex:0 0 22px;height:22px;border-radius:50%;background:var(--surface2);color:var(--text);
+  font-size:11.5px;display:grid;place-items:center}
+.ocustom{margin:2px 0 4px}
+.ocustom textarea{width:100%}
+.ocount{max-width:110px}
+.orecap{border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:22px}
+.orecap .spec:last-of-type{border-bottom:0}
 
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(140%);background:var(--text);color:var(--bg);
   padding:12px 22px;border-radius:999px;z-index:400;transition:.3s;font-size:14.5px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:90vw;text-align:center}
@@ -218,6 +242,12 @@ footer.site .sp{margin-left:auto}
 .stable tr.qnew:hover td{background:#fbf1dc}
 .stable tr.qnew td:first-child{box-shadow:inset 3px 0 0 #9a5b3f}
 .qacts{display:flex;gap:6px;justify-content:flex-end}
+/* One option group in the item editor. */
+.gbox{border:1px solid #e4ded6;border-radius:10px;padding:18px;margin-bottom:14px;background:#faf8f5}
+.gbox > .f{margin-top:4px}
+.ctable td{padding:6px 6px 6px 0;border-top:1px solid #eae4dc}
+.ctable th{padding:0 6px 7px 0}
+.ctable input[type=number]{width:100%}
 .stable img.th{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#eee9e2}
 .calc-out{background:#faf8f5;border:1px solid #e4ded6;border-radius:10px;padding:18px}
 .cline{display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:14px;color:#5f5649}
@@ -861,6 +891,151 @@ function openModal(html, narrow){
 }
 function closeModal(){ $("#modal").classList.remove("open"); }
 
+/* -----------------------------------------------------------------------
+   ITEM OPTIONS
+   An item can carry a list of option groups. There are only two kinds, and
+   everything she asked for is one of them:
+
+     choice -- one dropdown. "Size", "Glaze", "Finish".
+     count  -- "how many?" from 1 to max, then that many dropdowns of the
+               same list. Her donut sculpture: pick 3, choose each donut.
+
+   Every entry in a dropdown can carry its own price adjustment, and any
+   entry can be flagged "let them type something", which reveals a text box
+   with a character limit she sets per group.
+
+   Price = the item's price
+         + perExtra for each unit past the first (count groups)
+         + each chosen entry's own adjustment.
+
+   So the base price covers the first one. If she wants a flat price-per-unit
+   instead, she sets perExtra to the full price -- both shapes work without
+   two different mechanisms.
+   ----------------------------------------------------------------------- */
+
+const itemOptions = it => (it && it.optionsOn && Array.isArray(it.options)) ? it.options : [];
+const groupMax = g => Math.max(1, Math.min(12, num(g.max) || 1));
+const groupCount = (g, s) => g.kind === "count"
+  ? Math.max(1, Math.min(groupMax(g), num(s && s.count) || 1)) : 1;
+const findChoice = (g, id) => (g.choices || []).find(c => c.id === id) || null;
+
+// What the visitor has picked on the item that is open right now.
+let optPick = { itemId: null, sel: {} };
+
+function defaultSel(it){
+  const sel = {};
+  itemOptions(it).forEach(g => {
+    const first = (g.choices || [])[0];
+    const slots = g.kind === "count" ? groupMax(g) : 1;
+    const picks = [], texts = [];
+    for (let k = 0; k < slots; k++){
+      // An optional group starts on nothing, so "no thanks" is the default
+      // and she never gets an inquiry for an upsell they did not want.
+      picks[k] = g.required === false ? "" : (first ? first.id : "");
+      texts[k] = "";
+    }
+    sel[g.id] = { count: 1, picks: picks, texts: texts };
+  });
+  return sel;
+}
+
+function priceWith(it, sel){
+  let total = num(it.price);
+  itemOptions(it).forEach(g => {
+    const s = sel[g.id] || {};
+    const n = groupCount(g, s);
+    if (g.kind === "count") total += num(g.perExtra) * (n - 1);
+    for (let k = 0; k < n; k++){
+      const c = findChoice(g, (s.picks || [])[k]);
+      if (c) total += num(c.add);
+    }
+  });
+  return total;
+}
+
+// One readable line per group, for the inquiry record and the email.
+function optionSummary(it, sel){
+  return itemOptions(it).map(g => {
+    const s = sel[g.id] || {};
+    const n = groupCount(g, s);
+    const parts = [];
+    for (let k = 0; k < n; k++){
+      const c = findChoice(g, (s.picks || [])[k]);
+      if (!c) continue;
+      const t = String((s.texts || [])[k] || "").trim();
+      parts.push(c.label + (c.custom && t ? ': "' + t + '"' : ""));
+    }
+    if (!parts.length) return null;
+    return { label: String(g.label || "Option").slice(0, 80),
+             value: ((g.kind === "count" ? n + " chosen: " : "") + parts.join(", ")).slice(0, 400) };
+  }).filter(Boolean);
+}
+
+function optionsHTML(it){
+  const sel = optPick.sel;
+  return itemOptions(it).map(g => {
+    const s = sel[g.id] || {};
+    const n = groupCount(g, s);
+    const limit = Math.max(1, Math.min(500, num(g.customLimit) || 120));
+    let h = '<div class="ogroup"><label class="f">' + esc(g.label || "Options") + '</label>' +
+            (g.help ? '<div class="ohelp">' + esc(g.help) + '</div>' : '');
+
+    if (g.kind === "count"){
+      h += '<select class="ocount" onchange="optSetCount(\'' + g.id + '\',this.value)">';
+      for (let v = 1; v <= groupMax(g); v++)
+        h += '<option value="' + v + '"' + (v === n ? " selected" : "") + '>' + v + (v === 1 ? "" : "") + '</option>';
+      h += '</select>' + (num(g.perExtra) ? '<span class="ohelp"> +' + money(g.perExtra) + ' for each one after the first</span>' : '');
+    }
+
+    for (let k = 0; k < n; k++){
+      const picked = (s.picks || [])[k] || "";
+      const c = findChoice(g, picked);
+      h += '<div class="orow">' +
+        (g.kind === "count" ? '<span class="onum">' + (k + 1) + '</span>' : '') +
+        '<select onchange="optSetPick(\'' + g.id + '\',' + k + ',this.value)">' +
+        (g.required === false ? '<option value=""' + (picked ? "" : " selected") + '>-- none --</option>' : '') +
+        (g.choices || []).map(ch => '<option value="' + esc(ch.id) + '"' + (ch.id === picked ? " selected" : "") + '>' +
+          esc(ch.label) + (num(ch.add) ? "  +" + money(ch.add) : "") + '</option>').join("") +
+        '</select></div>' +
+        (c && c.custom
+          ? '<div class="ocustom"><textarea rows="2" maxlength="' + limit + '" placeholder="' +
+              esc(g.customLabel || "Tell me what you would like") + '" ' +
+              'oninput="optSetText(\'' + g.id + '\',' + k + ',this.value)">' + esc((s.texts || [])[k] || "") + '</textarea>' +
+            '<div class="ohelp" id="oc_' + g.id + '_' + k + '">' +
+              String((s.texts || [])[k] || "").length + ' / ' + limit + ' characters</div></div>'
+          : '');
+    }
+    return h + '</div>';
+  }).join("");
+}
+
+function optRedraw(){
+  const it = state.items.find(x => x.id === optPick.itemId); if (!it) return;
+  const w = document.getElementById("optWrap"); if (w) w.innerHTML = optionsHTML(it);
+  const p = document.getElementById("optPrice");
+  if (p) p.textContent = it.status === "sold" ? "Sold" : money(priceWith(it, optPick.sel));
+}
+function optSetCount(gid, v){
+  const s = optPick.sel[gid]; if (!s) return;
+  s.count = num(v); optRedraw();
+}
+function optSetPick(gid, k, v){
+  const s = optPick.sel[gid]; if (!s) return;
+  s.picks[k] = v;
+  if (!v) s.texts[k] = "";          // dropped back to "none": forget what they typed
+  optRedraw();                       // a "custom" entry has to reveal its text box
+}
+function optSetText(gid, k, v){
+  const s = optPick.sel[gid]; if (!s) return;
+  s.texts[k] = v;
+  // Deliberately no redraw here -- rebuilding the block mid-sentence would
+  // throw the cursor out of the textarea. Only the counter needs updating.
+  const it = state.items.find(x => x.id === optPick.itemId);
+  const g = it && itemOptions(it).find(g => g.id === gid);
+  const el = document.getElementById("oc_" + gid + "_" + k);
+  if (el && g) el.textContent = v.length + " / " + Math.max(1, Math.min(500, num(g.customLimit) || 120)) + " characters";
+}
+
 function openItem(id){
   const i = state.items.find(x => x.id === id); if (!i) return;
   const imgs = i.images || [];
@@ -876,14 +1051,18 @@ function openItem(id){
     ? "Free shipping on this piece"
     : (sh.methods && sh.methods[0] ? "Shipping from " + money(sh.methods[0].price) : "");
   const sold = i.status === "sold";
+  optPick = { itemId: i.id, sel: defaultSel(i) };
+  const hasOpts = itemOptions(i).length > 0;
   const info = '<div class="info">' +
     (i.status && i.status !== "available" ? '<span class="badge ' + esc(i.status) + '">' + esc(i.status) + '</span>' : '') +
     '<h2>' + esc(i.title) + '</h2>' +
     (i.typeId ? '<div class="meta" style="color:var(--dim);font-size:13px;letter-spacing:.07em;text-transform:uppercase">' + esc(typeName(i.typeId)) + '</div>' : '') +
-    '<div class="bigprice">' + (sold ? "Sold" : (num(i.price) > 0 ? money(i.price) : "Price on request")) + '</div>' +
+    '<div class="bigprice" id="optPrice">' + (sold ? "Sold" : (num(i.price) > 0 ? money(i.price) : "Price on request")) + '</div>' +
+    (hasOpts && !sold && num(i.price) > 0 ? '<div class="note" style="margin:-8px 0 14px">Updates as you choose below</div>' : '') +
     (shipLine && !sold ? '<div class="note" style="margin-bottom:14px">' + esc(shipLine) + '</div>' : '') +
     (i.description ? '<div class="prose" style="font-size:15.5px">' + i.description.split("\n\n").map(p => '<p>' + esc(p) + '</p>').join("") + '</div>' : '') +
     (specs ? '<div style="margin:18px 0">' + specs + '</div>' : '') +
+    (hasOpts && !sold ? '<div id="optWrap" class="optwrap">' + optionsHTML(i) + '</div>' : '') +
     (sold
       ? '<button class="btn ghost" onclick="openInquiry(\'' + i.id + '\')">Ask about something similar</button>'
       : '<button class="btn" onclick="openInquiry(\'' + i.id + '\')">Inquire to buy</button>') +
@@ -903,9 +1082,22 @@ function openInquiry(itemId){
   const opts = (sh.methods || []).map(m =>
     '<option value="' + esc(m.name) + '">' + esc(m.name) + " -- " + money(m.price) + '</option>').join("") +
     (sh.localPickup ? '<option value="Local pickup">Local pickup -- free</option>' : '');
+
+  // Only trust the picks if they belong to the item being inquired about --
+  // optPick holds whatever was open last, which may be something else.
+  const picked = (i && optPick.itemId === i.id) ? optionSummary(i, optPick.sel) : [];
+  const total  = picked.length ? priceWith(i, optPick.sel) : 0;
+  const recap = picked.length
+    ? '<div class="orecap"><div class="f" style="margin-bottom:8px">What you chose</div>' +
+        picked.map(p => '<div class="spec"><span>' + esc(p.label) + '</span><span>' + esc(p.value) + '</span></div>').join("") +
+        '<div class="spec"><span><b>Total</b></span><span><b>' + money(total) + '</b></span></div>' +
+        '<div class="note" style="margin-top:8px">Before shipping. Change anything by closing this and going back.</div></div>'
+    : '';
+
   openModal('<div style="padding:30px">' +
     '<h2 style="margin-bottom:4px">' + (i ? "Inquire: " + esc(i.title) : "Get in touch") + '</h2>' +
     '<p class="note" style="margin-bottom:22px">Send this and I\'ll get back to you with payment details.</p>' +
+    recap +
     '<form onsubmit="submitInquiry(event,\'' + esc(itemId || "") + '\')">' +
     '<div class="row2"><div class="field"><label class="f">Your name</label><input name="name" required></div>' +
     '<div class="field"><label class="f">Email</label><input type="email" name="email" required></div></div>' +
@@ -927,7 +1119,7 @@ function mailSubject(f, it){
   return ("New inquiry -- " + what + (who ? " -- " + who : "")).slice(0, 250);
 }
 
-function mailBody(f, it){
+function mailBody(f, it, chosen, total){
   const L = [];
   L.push("Somebody has asked to buy from your website.");
   L.push("");
@@ -935,6 +1127,8 @@ function mailBody(f, it){
   L.push("Email:     " + oneLine(f.get("email")));
   L.push("Wants:     " + (it ? oneLine(it.title) + (num(it.price) ? "  " + money(num(it.price)) : "")
                              : "nothing specific -- general question"));
+  (chosen || []).forEach(p => L.push("  " + (oneLine(p.label) + ":").padEnd(9) + " " + oneLine(p.value)));
+  if (chosen && chosen.length) L.push("  Total:    " + money(total) + "  (before shipping)");
   if (f.get("shipping")) L.push("Delivery:  " + oneLine(f.get("shipping")));
   L.push("");
   const msg = String(f.get("message") || "").trim();
@@ -952,11 +1146,16 @@ async function submitInquiry(e, itemId){
   const btn = e.target.querySelector("button[type=submit]");
   btn.disabled = true; btn.textContent = "Sending...";
   const it = itemId ? state.items.find(x => x.id === itemId) : null;
+  const chosen = (it && optPick.itemId === it.id) ? optionSummary(it, optPick.sel) : [];
   try {
     await store.addInquiry({
       name: f.get("name"), email: f.get("email"),
       shipping: f.get("shipping") || "", message: f.get("message") || "",
-      itemId: itemId || "", itemTitle: it ? it.title : "", itemPrice: it ? num(it.price) : 0
+      itemId: itemId || "", itemTitle: it ? it.title : "", itemPrice: it ? num(it.price) : 0,
+      // The configured price, so she is not re-doing the sums by hand when
+      // the inquiry reaches her. Matches what the customer was shown.
+      options: chosen.slice(0, 12),
+      optionsTotal: chosen.length ? priceWith(it, optPick.sel) : 0
     });
 
     // The inquiry is safely saved by this point. Emailing it is a bonus, so
@@ -964,7 +1163,8 @@ async function submitInquiry(e, itemId){
     // and the message is not lost. It still shows in Studio > Inquiries.
     const notify = (state.settings.notifyEmail || "").trim();
     if (notify) {
-      try { await store.queueMail(notify, mailSubject(f, it), mailBody(f, it)); }
+      try { await store.queueMail(notify, mailSubject(f, it),
+                                  mailBody(f, it, chosen, chosen.length ? priceWith(it, optPick.sel) : 0)); }
       catch(err){ console.warn("Inquiry saved; the email alert could not be queued:", err); }
     }
 
@@ -1334,7 +1534,9 @@ function tabItems(){
     (state.items.length ? '<table class="stable" style="margin-top:18px"><tr><th></th><th>Title</th><th>Type</th><th>Price</th><th>Status</th><th></th></tr>' +
       state.items.map(i => '<tr><td>' + (i.images && i.images[0]
           ? '<img class="th" src="' + esc(i.images[0]) + '">' : '<div class="th" style="width:44px;height:44px;border-radius:6px;background:#eee9e2"></div>') + '</td>' +
-        '<td><b>' + esc(i.title) + '</b>' + (i.published === false ? ' <span class="tg">(draft)</span>' : '') + '</td>' +
+        '<td><b>' + esc(i.title) + '</b>' + (i.published === false ? ' <span class="tg">(draft)</span>' : '') +
+          (itemOptions(i).length ? '<div class="tg">' + itemOptions(i).length +
+            (itemOptions(i).length === 1 ? ' choice' : ' choices') + ' to make</div>' : '') + '</td>' +
         '<td>' + esc(typeName(i.typeId)) + '</td>' +
         '<td>' + (num(i.price) ? money(i.price) : "--") + '</td>' +
         '<td>' + esc(i.status || "available") + '</td>' +
@@ -1354,13 +1556,18 @@ async function rmItem(id){
 let draft = null;
 function editItem(id){
   const base = { title:"", typeId:(state.settings.itemTypes[0] || {}).id || "", price:0, status:"available",
-                 images:[], description:"", fields:{}, published:true, costing:null };
+                 images:[], description:"", fields:{}, published:true, costing:null,
+                 optionsOn:false, options:[] };
   draft = id ? clone(state.items.find(x => x.id === id)) : base;
+  if (!Array.isArray(draft.options)) draft.options = [];   // items saved before options existed
   itemModal();
 }
 function itemModal(){
   const T = state.settings.itemTypes;
   const flds = typeFields(draft.typeId);
+  // Every structural change rebuilds this whole modal. Without this the
+  // options editor would fling her back to the top on each "+ Add".
+  const keep = (document.getElementById("modalBox") || {}).scrollTop || 0;
   openModal('<div style="padding:30px;max-height:none">' +
     '<h2 style="margin-bottom:18px">' + (draft.id ? "Edit item" : "New item") + '</h2>' +
     '<div class="row2">' +
@@ -1387,6 +1594,7 @@ function itemModal(){
       '<div style="margin-top:10px"><input id="imgUrl" placeholder="...or paste an image URL and press Add">' +
       '<button class="btn ghost" style="margin-top:8px" onclick="const v=document.getElementById(\'imgUrl\').value.trim();if(v){draft.images=(draft.images||[]).concat([v]);itemModal()}">Add URL</button></div>' +
       sizeWarning() + '</div>' +
+    optionsEditor() +
     (draft.costing ? '<div class="hint" style="margin-bottom:14px">Priced with the calculator: cost ' + money(draft.costing.cost) +
       ', you keep about ' + money(draft.costing.keep) + '.</div>' : '') +
     '<div class="srow" style="margin-top:8px">' +
@@ -1394,6 +1602,129 @@ function itemModal(){
       '<button class="btn ghost" onclick="closeModal()">Cancel</button>' +
       '<button class="btn ghost" onclick="calcFor(draft)">Price this with the calculator</button>' +
     '</div></div>');
+  const mb = document.getElementById("modalBox");
+  if (mb && keep) mb.scrollTop = keep;
+}
+
+/* ---- the options editor, inside the item modal ---- */
+
+function newGroup(kind, preset){
+  const mk = (l, add) => ({ id: uid("c_"), label: l, add: add || 0, custom: false });
+  const common = { id: uid("g_"), label: "", required: true, help: "",
+                   customLabel: "Tell me what you would like", customLimit: 120 };
+  if (preset === "size")
+    return Object.assign(common, { kind:"choice", label:"Size",
+             choices:[mk("Small", 0), mk("Medium", 15), mk("Large", 30)] });
+  if (kind === "count")
+    return Object.assign(common, { kind:"count", label:"How many?", max:3, perExtra:0,
+             choices:[mk("First choice", 0)] });
+  return Object.assign(common, { kind:"choice", label:"Choose one", choices:[mk("First choice", 0)] });
+}
+function optsOn(v){
+  draft.optionsOn = v;
+  if (v && !(draft.options || []).length) draft.options = [newGroup("choice")];
+  itemModal();
+}
+function gAdd(kind, preset){ draft.options = (draft.options || []).concat([newGroup(kind, preset)]); itemModal(); }
+function gDel(n){
+  if (!confirm('Remove "' + (draft.options[n].label || "this group") + '"?')) return;
+  draft.options.splice(n, 1); itemModal();
+}
+function gMove(n, d){
+  const t = n + d, O = draft.options;
+  if (t < 0 || t >= O.length) return;
+  const tmp = O[n]; O[n] = O[t]; O[t] = tmp; itemModal();
+}
+function gSet(n, k, v, re){ draft.options[n][k] = v; if (re) itemModal(); }
+function cAdd(n){
+  draft.options[n].choices = (draft.options[n].choices || []).concat([{ id:uid("c_"), label:"", add:0, custom:false }]);
+  itemModal();
+}
+function cDel(n, m){ draft.options[n].choices.splice(m, 1); itemModal(); }
+function cSet(n, m, k, v, re){ draft.options[n].choices[m][k] = v; if (re) itemModal(); }
+
+function optionsEditor(){
+  const on = !!draft.optionsOn, O = draft.options || [];
+  let h = '<div class="field"><label class="srow" style="gap:10px;margin-bottom:6px">' +
+    '<span class="sw"><input type="checkbox" ' + (on ? "checked" : "") + ' onchange="optsOn(this.checked)"><i></i></span>' +
+    '<span><b>This one has choices to make</b></span></label>' +
+    '<div class="hint" style="margin-top:0">Sizes, glazes, how many donuts on the sculpture. Leave it off and the ' +
+      'piece is simply bought as it is -- most will be.</div></div>';
+  if (!on) return h;
+
+  h += O.map((g, n) => {
+    const isCount = g.kind === "count";
+    const anyCustom = (g.choices || []).some(c => c.custom);
+    return '<div class="gbox">' +
+      '<div class="srow" style="margin-bottom:12px">' +
+        '<input style="flex:1;min-width:160px" placeholder="What to call it, e.g. Donut type" value="' + esc(g.label || "") +
+          '" oninput="gSet(' + n + ',\'label\',this.value)">' +
+        '<select style="width:auto" onchange="gSet(' + n + ',\'kind\',this.value,1)">' +
+          '<option value="choice"' + (isCount ? "" : " selected") + '>Pick one</option>' +
+          '<option value="count"' + (isCount ? " selected" : "") + '>Pick how many, then pick each</option>' +
+        '</select>' +
+        '<span class="sp"></span>' +
+        '<button class="iconbtn" title="Move up" onclick="gMove(' + n + ',-1)">&uarr;</button>' +
+        '<button class="iconbtn" title="Move down" onclick="gMove(' + n + ',1)">&darr;</button>' +
+        '<button class="iconbtn del" title="Remove this group" onclick="gDel(' + n + ')">&times;</button>' +
+      '</div>' +
+
+      (isCount
+        ? '<div class="row2">' +
+            '<div class="field"><label class="f">Most they can have</label>' +
+              '<input type="number" min="1" max="12" value="' + groupMax(g) + '" oninput="gSet(' + n + ',\'max\',+this.value,1)"></div>' +
+            '<div class="field"><label class="f">Each one after the first adds</label>' +
+              '<input type="number" step="0.01" min="0" value="' + num(g.perExtra) + '" oninput="gSet(' + n + ',\'perExtra\',+this.value)"></div>' +
+          '</div>' +
+          '<div class="hint" style="margin:-6px 0 14px">The item price covers the first one. Three donuts at ' +
+            money(num(draft.price)) + ' + ' + money(num(g.perExtra)) + ' each comes to ' +
+            money(num(draft.price) + num(g.perExtra) * 2) + ' before any choice adds to it. ' +
+            'Want them priced flat instead? Put the full price in that second box.</div>'
+        : '') +
+
+      '<label class="srow" style="gap:10px;margin-bottom:12px">' +
+        '<span class="sw"><input type="checkbox" ' + (g.required === false ? "" : "checked") +
+          ' onchange="gSet(' + n + ',\'required\',this.checked,1)"><i></i></span>' +
+        '<span>They have to choose' + (g.required === false ? ' <span class="tg">-- right now they can skip it</span>' : '') + '</span></label>' +
+
+      '<div class="field"><label class="f">A line of help underneath (optional)</label>' +
+        '<input value="' + esc(g.help || "") + '" placeholder="e.g. Measured across the widest point" ' +
+        'oninput="gSet(' + n + ',\'help\',this.value)"></div>' +
+
+      '<label class="f">What they can pick from</label>' +
+      '<table class="stable ctable"><tr><th>Shows as</th><th style="width:130px">Adds to price</th>' +
+        '<th style="width:150px">Lets them type</th><th style="width:44px"></th></tr>' +
+      (g.choices || []).map((c, m) =>
+        '<tr><td><input value="' + esc(c.label) + '" placeholder="e.g. Chocolate glazed" ' +
+            'oninput="cSet(' + n + ',' + m + ',\'label\',this.value)"></td>' +
+          '<td><input type="number" step="0.01" value="' + num(c.add) + '" ' +
+            'oninput="cSet(' + n + ',' + m + ',\'add\',+this.value)"></td>' +
+          '<td><label class="srow" style="gap:8px"><span class="sw"><input type="checkbox" ' + (c.custom ? "checked" : "") +
+            ' onchange="cSet(' + n + ',' + m + ',\'custom\',this.checked,1)"><i></i></span></label></td>' +
+          '<td><div class="qacts"><button class="iconbtn del" title="Remove" onclick="cDel(' + n + ',' + m + ')">&times;</button></div></td></tr>').join("") +
+      '</table>' +
+      '<button class="btn ghost" style="margin-top:10px" onclick="cAdd(' + n + ')">+ Add another</button>' +
+      '<div class="hint">Leave "adds to price" at 0 for the ones that cost the same. Switch on <b>lets them type</b> for ' +
+        'something like "Custom -- tell me what you want" and a text box appears when they pick it.</div>' +
+
+      (anyCustom
+        ? '<div class="row2" style="margin-top:14px">' +
+            '<div class="field"><label class="f">What the text box asks</label>' +
+              '<input value="' + esc(g.customLabel || "") + '" placeholder="Tell me what you would like" ' +
+              'oninput="gSet(' + n + ',\'customLabel\',this.value)"></div>' +
+            '<div class="field"><label class="f">Characters they get</label>' +
+              '<input type="number" min="1" max="500" value="' + Math.max(1, Math.min(500, num(g.customLimit) || 120)) +
+              '" oninput="gSet(' + n + ',\'customLimit\',+this.value)"></div>' +
+          '</div>'
+        : '') +
+      '</div>';
+  }).join("");
+
+  return h + '<div class="srow" style="margin-bottom:18px">' +
+    '<button class="btn ghost" onclick="gAdd(\'choice\')">+ A dropdown</button>' +
+    '<button class="btn ghost" onclick="gAdd(\'count\')">+ A how-many group</button>' +
+    '<button class="btn ghost" onclick="gAdd(\'choice\',\'size\')">+ Sizes</button>' +
+    '</div>';
 }
 function sizeWarning(){
   const kb = Math.round(JSON.stringify(draft).length / 1024);
@@ -1704,6 +2035,12 @@ function tabInbox(){
         (q.status === "new" ? '<div><span class="nbadge">New</span></div>' : '') + '</td>' +
       '<td><b>' + esc(q.name) + '</b><div class="tg">' + esc(q.email) + '</div></td>' +
       '<td>' + (q.itemTitle ? esc(q.itemTitle) + (q.itemPrice ? ' <span class="tg">' + money(q.itemPrice) + '</span>' : '') : '<span class="tg">General question</span>') +
+        ((q.options || []).length
+          ? '<div class="tg" style="max-width:330px">' +
+              q.options.map(p => '<div><b>' + esc(p.label) + ':</b> ' + esc(p.value) + '</div>').join("") +
+              (num(q.optionsTotal) ? '<div style="margin-top:3px"><b>Total ' + money(q.optionsTotal) + '</b></div>' : '') +
+            '</div>'
+          : '') +
         (q.message ? '<div class="tg" style="max-width:330px;white-space:pre-wrap">' + esc(q.message) + '</div>' : '') + '</td>' +
       '<td>' + esc(q.shipping || "--") + '</td>' +
       // .iconbtn is display:grid, so these need a flex row of their own or
