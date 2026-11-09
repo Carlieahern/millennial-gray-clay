@@ -105,8 +105,10 @@ Sign in with the account from step 2. `Ctrl+S` saves.
 | **Item types** | Mugs vs. originals vs. prints — each type has its own detail fields |
 | **Price calculator** | What to charge, worked backwards from real costs |
 | **Shipping** | Delivery options, packaging cost, free-shipping threshold, local pickup |
+| **Payment & promos** | Ways people can say they want to pay, promo codes, your thank-you promise |
 | **Socials** | Profile links, plus posts you pin by pasting embed codes |
-| **Inquiries** | Everyone who asked to buy something, with an unread count and alerts |
+| **Orders** | Requests from the cart: who, where, what, and the total |
+| **Inquiries** | Questions from the Contact form, with an unread count and alerts |
 | **Setup** | Backup/restore, reset the design |
 
 ### The price calculator
@@ -186,18 +188,62 @@ pre-filled with Small / Medium / Large so you only have to edit the prices.
 Switching the whole thing back off hides the options from your site but keeps
 the groups, so you can turn them on again later without rebuilding them.
 
-### The message box
+### The cart and the request page
 
-Every listing has an **Anything you want to say** box, whether or not it has
-options — nothing to switch on. It's optional, capped at 1,500 characters,
-and it carries through to the inquiry form so nobody has to retype it. It
-arrives as the message on the inquiry, same as before.
+Someone browsing picks **Add to cart** on each piece they want, then
+**Cart → Continue to request**. The request page asks for name, email,
+phone, a US shipping address, how they'd rather pay, an optional promo
+code, and a message to you. They send it, and it lands in **Studio →
+Orders** with an unread count, exactly like inquiries.
 
-> **Republish `firestore.rules` before you rely on this** (section 3). The
-> rules now have to let an inquiry carry the choices, and they got stricter
-> at the same time: an inquiry may only contain the fields the form actually
-> sends, and it can't arrive pre-marked as already seen. Until you republish,
-> inquiries with options on them will be rejected.
+**Nothing is charged, ever.** No card is taken, no payment is processed,
+no account details are collected. The payment dropdown is only them
+telling you what suits them — you confirm the total and take the money
+however you two agree. The page says so in three places, because a page
+that looks like a checkout but isn't one is worse than no page at all.
+
+Each piece can be in the cart once, since each is one of a kind. Adding
+it again just updates the choices.
+
+A cart that's been sitting a while is re-checked against your live items
+every time it's opened: anything sold or unpublished in the meantime is
+greyed out, left out of the total, and has to be removed before the
+request can go.
+
+Questions that aren't orders go through the **Contact** section instead,
+and still land in Inquiries.
+
+### Payment & promos
+
+**Ways to pay** fill that dropdown. Venmo, PayPal, Zelle and cash on
+pickup are there to start — edit them to whatever you actually use.
+
+**Promo codes** take a percentage off the pieces. Shipping is never
+discounted, and only one code applies to an order — they don't stack.
+Each code has two switches:
+
+- **Live** — off parks a code without deleting it.
+- **Everyone gets it** — applies it automatically with nothing typed, and
+  shows it on your listings with the old price struck through. Only one
+  code can do this at a time.
+
+If someone types a valid code, it wins over the automatic one. A code
+with no name is ignored.
+
+**Your promise** is the line on the thank-you screen. It says 24 hours
+out of the box. Keep it to something you can actually keep — it's the
+last thing they read.
+
+### Free shipping
+
+Set the threshold in **Shipping**. It's judged on what they actually pay
+for the pieces, so a discount can tip an order back under it.
+
+> **Republish `firestore.rules` before you take an order** (section 3).
+> Orders are a new collection and the rules don't allow them yet, so a
+> request will be refused until you do. The same update also tightened
+> inquiries: only the fields the form sends are permitted, and nothing can
+> arrive pre-marked as seen.
 
 ### Pinning a social post
 
@@ -224,15 +270,17 @@ site in it. Worth doing before any big redesign.
 
 ---
 
-### Knowing when an inquiry arrives
+### Knowing when an order or question arrives
 
 This is already on. Nothing to set up, nothing to pay for.
 
-Any inquiry you haven't looked at yet shows as a **number** in three places,
+Anything you have not looked at yet -- an order request or a question --
+shows as a **number** in three places,
 and all three only appear when you're signed in — a visitor never sees them:
 
-- on the **Studio** link at the foot of your own site
-- on the **Inquiries** tab inside Studio
+- on the **Studio** link at the foot of your own site, counting both together
+- on the **Orders** and **Inquiries** tabs separately, so you can see which
+  is which at a glance
 - in the browser tab itself, as `(2) Millennial Gray Clay`, so you can see it
   from another tab without clicking in
 
@@ -317,8 +365,12 @@ have.
 
 ## Things this deliberately does not do
 
-- **No card checkout.** Buyers send an inquiry and you invoice them. Adding
-  Stripe later means a small server piece, so it stops being one file.
+- **No card checkout.** The cart ends in a request, not a payment. You
+  confirm the total and take the money however you two agree. Adding Stripe
+  later means a small server piece, so it stops being one file.
+- **No sales tax.** Nothing is charged by the site, so nothing is
+  calculated. Tax belongs on the invoice you send, where you know where it
+  is going. Whether you owe any is a question for your state.
 - **No automatic social feed.** Pulling your posts in automatically needs a Meta
   developer app and tokens that expire every 60 days. Pasted embeds never break
   on their own.

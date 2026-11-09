@@ -60,6 +60,54 @@ service cloud.firestore {
       allow read, update, delete: if signedIn();
     }
 
+    // Order requests from the cart. Same shape of protection as inquiries:
+    // anyone may send one, only a signed-in account may read them back --
+    // these hold a home address and a phone number, so a leak here is worse
+    // than a leaked question.
+    //
+    // Money is never taken by the site, so nothing here is a payment record.
+    // `payment` is only the method they said they would prefer.
+    match /orders/{id} {
+      allow create: if request.resource.data.keys().hasOnly(
+                         ['name', 'email', 'phone', 'address', 'payment', 'shipping',
+                          'shippingCost', 'items', 'subtotal', 'discountCode',
+                          'discountPct', 'discountAmount', 'total', 'message',
+                          'createdAt', 'status'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() < 200
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() < 320
+                    && request.resource.data.get('phone', '').size() < 40
+                    && request.resource.data.get('payment', '').size() < 120
+                    && request.resource.data.get('shipping', '').size() < 200
+                    && request.resource.data.get('message', '').size() < 5000
+                    && request.resource.data.get('discountCode', '').size() < 60
+                    && request.resource.data.status == 'new'
+                    && request.resource.data.items is list
+                    && request.resource.data.items.size() > 0
+                    && request.resource.data.items.size() <= 40
+                    && request.resource.data.address.keys().hasOnly(
+                         ['street', 'apt', 'city', 'state', 'zip'])
+                    && request.resource.data.address.street is string
+                    && request.resource.data.address.street.size() < 200
+                    && request.resource.data.address.get('apt', '').size() < 100
+                    && request.resource.data.address.city is string
+                    && request.resource.data.address.city.size() < 100
+                    && request.resource.data.address.state is string
+                    && request.resource.data.address.state.size() <= 2
+                    && request.resource.data.address.zip is string
+                    && request.resource.data.address.zip.size() <= 10
+                    // Totals are the customer's browser talking, so treat
+                    // them as a claim to sanity-check, not as gospel. The
+                    // real figure is the one confirmed by hand before any
+                    // money changes hands.
+                    && request.resource.data.total is number
+                    && request.resource.data.total >= 0
+                    && request.resource.data.total < 1000000;
+      allow read, update, delete: if signedIn();
+    }
+
     // The outbox the "Trigger Email" extension watches. The website drops a
     // letter in here for each inquiry and the extension sends it.
     //

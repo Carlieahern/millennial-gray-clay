@@ -67,7 +67,7 @@ section.sect{padding:var(--sect-pad) 0;position:relative}
 .hero h1{font-size:clamp(34px,5.6vw,60px);margin-bottom:18px}
 .hero p{font-size:18px;color:var(--dim);max-width:46ch;margin:0 0 28px;white-space:pre-wrap}
 .hero-art img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--radius);box-shadow:var(--shadow)}
-.hero-art .noimg{width:100%;aspect-ratio:4/5;border-radius:var(--radius);background:var(--surface2);display:grid;place-items:center;color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.hero-art .noimg{width:100%;aspect-ratio:4/5;border-radius:var(--radius);background:var(--surface2);display:grid;place-items:center;color:var(--text);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
 .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
 .hero.center .hero-cta{justify-content:center}
 
@@ -80,7 +80,7 @@ section.sect{padding:var(--sect-pad) 0;position:relative}
 .card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
 .card .ph{aspect-ratio:1/1;background:var(--surface2);position:relative;overflow:hidden}
 .card .ph img{width:100%;height:100%;object-fit:cover}
-.card .ph .noimg{position:absolute;inset:0;display:grid;place-items:center;color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.card .ph .noimg{position:absolute;inset:0;display:grid;place-items:center;color:var(--text);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
 .frame-thin .card .ph img{border:1px solid var(--border)}
 .frame-thick .card .ph{padding:10px;background:var(--surface)}
 .frame-mat .card .ph{padding:22px;background:var(--surface)}
@@ -117,7 +117,8 @@ label.f{display:block;font-size:12px;letter-spacing:.08em;text-transform:upperca
    of the [type=...] selectors, so every field written without an explicit
    type -- the inquiry form's name box, most of Look & feel -- was falling
    back to the browser's own unstyled control. */
-input:not([type]),input[type=text],input[type=email],input[type=number],input[type=password],input[type=url],select,textarea{
+input:not([type]),input[type=text],input[type=email],input[type=number],input[type=password],input[type=url],
+input[type=tel],input[type=search],input[type=date],select,textarea{
   width:100%;font:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
   background:var(--surface);color:var(--text)}
 textarea{resize:vertical;min-height:96px}
@@ -144,7 +145,7 @@ footer.site .sp{margin-left:auto}
 .detail{display:grid;grid-template-columns:1.1fr .9fr}
 .detail .shots{background:var(--surface2)}
 .detail .shots img{width:100%;aspect-ratio:1/1;object-fit:cover}
-.detail .shots .noimg{width:100%;aspect-ratio:1/1;display:grid;place-items:center;color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.detail .shots .noimg{width:100%;aspect-ratio:1/1;display:grid;place-items:center;color:var(--text);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
 .detail .thumbs{display:flex;gap:8px;padding:10px;flex-wrap:wrap}
 .detail .thumbs img{width:54px;height:54px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid transparent}
 .detail .thumbs img.on{border-color:var(--accent)}
@@ -177,6 +178,23 @@ footer.site .sp{margin-left:auto}
    bare `.omiss` loses to it and the red outline never appears at all. */
 input.omiss,select.omiss,textarea.omiss{border-color:#b3261e}
 .ogap,.owarn{background:#fdecea;color:#8c1d18;border-radius:var(--radius-sm)}
+/* Cart and request page. */
+.cartbtn{background:none;border:1px solid var(--border);color:var(--text);font:inherit;font-size:14px;
+  padding:7px 14px;border-radius:999px;cursor:pointer;margin-left:14px;white-space:nowrap}
+.cartbtn:hover{border-color:var(--accent);color:var(--accent)}
+.wasprice{color:var(--dim);font-weight:400;margin-right:6px}
+.clines{display:flex;flex-direction:column}
+.cline-item{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--border)}
+.cline-item:first-child{border-top:0;padding-top:0}
+.cline-item.dim{opacity:.65}
+.cline-item img,.cline-item .noimg.sm{width:62px;height:62px;flex:0 0 62px;object-fit:cover;border-radius:var(--radius-sm);background:var(--surface2)}
+/* --text, not --dim: these placeholders sit on --surface2, and dim on
+   surface2 is 4.2:1 with the default palette -- under AA. */
+.cline-item .noimg.sm{display:grid;place-items:center;font-size:9.5px;letter-spacing:.06em;color:var(--text);text-align:center}
+.ci-body{flex:1;min-width:0}
+.ci-body .tg{font-size:12.5px;color:var(--dim);margin-top:2px}
+.ci-right{display:flex;align-items:center;gap:10px;white-space:nowrap}
+@media(max-width:560px){ .cartbtn{margin-left:8px;padding:6px 11px} }
 .ogap{display:inline-block;align-self:flex-start;font-size:12.5px;font-weight:500;padding:4px 9px;margin-top:-2px}
 .owarn{padding:12px 16px;margin-bottom:16px;font-size:13.5px;line-height:1.5}
 .owarn ul{margin:6px 0 0;padding-left:18px}
@@ -257,6 +275,12 @@ input.omiss,select.omiss,textarea.omiss{border-color:#b3261e}
 .stable tr.qnew:hover td{background:#fbf1dc}
 .stable tr.qnew td:first-child{box-shadow:inset 3px 0 0 #9a5b3f}
 .qacts{display:flex;gap:6px;justify-content:flex-end}
+/* One order request in Studio. */
+.obox.onew{border-color:#e3cf9f;background:#fffdf8}
+.obox .f{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6f6659;font-weight:500;margin-bottom:4px}
+.addr{font-size:14px;line-height:1.65;color:#26211c}
+.omsg{white-space:pre-wrap;font-size:14px;line-height:1.6;background:#faf8f5;border:1px solid #eae4dc;
+  border-radius:8px;padding:12px 14px;color:#26211c}
 /* One option group in the item editor. */
 .gbox{border:1px solid #e4ded6;border-radius:10px;padding:18px;margin-bottom:14px;background:#faf8f5}
 .gbox > .f{margin-top:4px}
@@ -312,6 +336,7 @@ input.omiss,select.omiss,textarea.omiss{border-color:#b3261e}
       <div class="brand" id="brand" onclick="go(firstSectionId())"></div>
       <button class="navtoggle" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
       <nav class="site" id="nav"></nav>
+      <button class="cartbtn" id="cartBtn" onclick="openCart()">Cart</button>
     </div>
   </header>
   <main id="main"></main>
@@ -419,6 +444,20 @@ const DEFAULTS = {
     hourlyRate:25, overheadPct:12, feePct:3, marginPct:40, roundTo:5, includePackaging:true
   },
 
+  // How people say they want to pay. Nothing is charged by the site -- this
+  // is only what they tell you they would prefer, so you know what to send.
+  payments: {
+    methods: ["Venmo", "PayPal", "Zelle", "Cash on local pickup"],
+    note: "Nothing is charged now. I'll confirm the total and send payment details."
+  },
+
+  // Discount codes. pct is a percentage off the items (never the shipping).
+  // auto:true applies it to everyone without typing, and shows on the listing.
+  promos: [],
+
+  // The promise made on the thank-you screen after a request is sent.
+  orderPromise: "I'll review your request and get back to you within 24 hours to confirm the total and payment.",
+
   // Where new inquiries get emailed. Blank means no emails are sent and
   // nothing about this feature is published. See the Inquiries tab.
   notifyEmail: ""
@@ -454,7 +493,8 @@ function deepMerge(base, over){
    ======================================================================= */
 const state = {
   settings: clone(DEFAULTS),
-  items: [], posts: [], inquiries: [],
+  items: [], posts: [], inquiries: [], orders: [],
+  cart: [],
   view: "home", filter: "all",
   mode: "local", user: null, ready: false,
   studioTab: "look", editing: null, dirty: false
@@ -519,6 +559,7 @@ const store = {
     state.items     = d.items     || [];
     state.posts     = d.posts     || [];
     state.inquiries = d.inquiries || [];
+    state.orders    = d.orders    || [];
   },
   async saveSettings(){
     if (state.mode === "cloud") await db.collection("site").doc("settings").set(state.settings);
@@ -562,6 +603,32 @@ const store = {
   async delInquiry(id){
     if (state.mode === "cloud") await db.collection("inquiries").doc(id).delete();
     else { state.inquiries = state.inquiries.filter(x => x.id !== id); lsWrite({ inquiries: state.inquiries }); }
+  },
+
+  async addOrder(o){
+    if (state.mode === "cloud") await db.collection("orders").add(o);
+    else { o.id = uid("o_"); state.orders.unshift(o); lsWrite({ orders: state.orders }); renderAlerts(); }
+  },
+  async delOrder(id){
+    if (state.mode === "cloud") await db.collection("orders").doc(id).delete();
+    else { state.orders = state.orders.filter(x => x.id !== id); lsWrite({ orders: state.orders }); }
+  },
+  async seenOrder(id, seen){
+    const o = state.orders.find(x => x.id === id); if (!o) return;
+    o.status = seen ? "seen" : "new";
+    if (state.mode === "cloud") await db.collection("orders").doc(id).update({ status: o.status });
+    else lsWrite({ orders: state.orders });
+  },
+  async seenAllOrders(){
+    const open = state.orders.filter(o => o.status === "new");
+    if (!open.length) return;
+    if (state.mode === "cloud"){
+      const b = db.batch();
+      open.forEach(o => b.update(db.collection("orders").doc(o.id), { status: "seen" }));
+      await b.commit();
+    }
+    open.forEach(o => o.status = "seen");
+    if (state.mode !== "cloud") lsWrite({ orders: state.orders });
   },
 
   // "Seen" is just status flipped from "new". Kept on the inquiry itself
@@ -610,42 +677,55 @@ function cloudError(e){
    ======================================================================= */
 
 const newInquiries = () => state.inquiries.filter(q => q.status === "new");
+const newOrders    = () => state.orders.filter(o => o.status === "new");
+const newTotal     = () => newInquiries().length + newOrders().length;
 
 // True when this browser is hers: signed in, or local preview where there is
 // no auth at all. Everything below is gated on it.
 const mineToSee = () => state.mode !== "cloud" || !!state.user;
 
-// The count in the tab title and on the footer's Studio button. A visitor
-// must never learn how many inquiries are waiting, so this checks the
-// session rather than just the number.
+// The count in the tab title and on the footer's Studio button, covering
+// orders and questions together. A visitor must never learn how much is
+// waiting, so this checks the session rather than just the number.
 function renderAlerts(){
   const name = (state.settings.content && state.settings.content.siteName) || "Art Shop";
-  const n = mineToSee() ? newInquiries().length : 0;
+  const n = mineToSee() ? newTotal() : 0;
   document.title = (n ? "(" + n + ") " : "") + name;
   const b = $("#studioBtn");
   if (b) b.innerHTML = "Studio" + (n ? ' <span class="nbadge">' + n + '</span>' : '');
+  renderCartCount();
 }
 
-let inqUnsub = null, inqPrimed = false;
-function watchInquiries(){
-  if (inqUnsub) return;
-  inqPrimed = false;
-  inqUnsub = db.collection("inquiries").onSnapshot(s => {
+// Orders and inquiries are read the same way and both are refused before
+// sign-in, so one watcher builds both rather than two near-copies.
+const WATCHED = {
+  inquiries: { key:"inquiries", noun:"inquiry" },
+  orders:    { key:"orders",    noun:"order" }
+};
+const unsubs = {}; const primed = {};
+function watchOne(name){
+  const w = WATCHED[name];
+  if (unsubs[name]) return;
+  primed[name] = false;
+  unsubs[name] = db.collection(w.key).onSnapshot(s => {
     // The very first snapshot is the backlog, not news. Pinging for it would
     // mean a chime every single time she opens the site.
-    const fresh = inqPrimed ? s.docChanges().filter(c => c.type === "added").map(c => c.doc.data()) : [];
-    inqPrimed = true;
-    state.inquiries = s.docs.map(d => Object.assign({ id:d.id }, d.data()))
-                            .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    const fresh = primed[name] ? s.docChanges().filter(c => c.type === "added").map(c => c.doc.data()) : [];
+    primed[name] = true;
+    state[w.key] = s.docs.map(d => Object.assign({ id:d.id }, d.data()))
+                         .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     renderAlerts();
     if (studioOpen()) renderStudio();
-    if (fresh.length) pingNew(fresh);
-  }, e => console.warn("Inquiries listener stopped:", (e && e.code) || e));
+    if (fresh.length) pingNew(fresh, w.noun);
+  }, e => console.warn(w.key + " listener stopped:", (e && e.code) || e));
 }
+function watchInquiries(){ watchOne("inquiries"); watchOne("orders"); }
 function unwatchInquiries(){
-  if (inqUnsub) inqUnsub();
-  inqUnsub = null; inqPrimed = false;
-  state.inquiries = [];
+  Object.keys(WATCHED).forEach(n => {
+    if (unsubs[n]) unsubs[n]();
+    unsubs[n] = null; primed[n] = false;
+    state[WATCHED[n].key] = [];
+  });
   renderAlerts();
 }
 
@@ -663,20 +743,26 @@ function setAlertPref(k, v){
   if (studioOpen()) renderStudio();
 }
 
-function pingNew(docs){
+function pingNew(docs, noun){
   const p = alertPrefs();
+  const isOrder = noun === "order";
+  const tab = isOrder ? "orders" : "inbox";
   const one = docs.length === 1 ? docs[0] : null;
-  const line = one ? "New inquiry from " + (one.name || "your website")
-                   : docs.length + " new inquiries";
+  const line = one
+    ? (isOrder ? "New order request" : "New question") + " from " + (one.name || "your website") +
+      (isOrder && num(one.total) ? " -- " + money(one.total) : "")
+    : docs.length + " new " + (isOrder ? "order requests" : "questions");
   toast(line);
   if (p.sound) chime();
   if (p.desktop && "Notification" in window && Notification.permission === "granted"){
     try {
-      const body = one ? ((one.itemTitle ? "Wants: " + one.itemTitle + "\n" : "") +
-                          String(one.message || "").slice(0, 160)).trim() || "Open Studio to read it."
-                       : "Open Studio to read them.";
-      const nf = new Notification(line, { body: body, tag: "mgc-inquiry" });
-      nf.onclick = () => { window.focus(); state.studioTab = "inbox"; openStudio(); nf.close(); };
+      const body = one
+        ? (isOrder
+            ? (one.items || []).map(i => i.title).join(", ").slice(0, 160) || "Open Studio to read it."
+            : String(one.message || "").slice(0, 160).trim() || "Open Studio to read it.")
+        : "Open Studio to read them.";
+      const nf = new Notification(line, { body: body, tag: "mgc-" + (noun || "inquiry") });
+      nf.onclick = () => { window.focus(); state.studioTab = tab; openStudio(); nf.close(); };
     } catch(e){ /* a few browsers refuse constructed notifications; the toast already fired */ }
   }
 }
@@ -845,12 +931,14 @@ function cardHTML(i){
     : '<div class="noimg">No photo</div>';
   const badge = i.status && i.status !== "available"
     ? '<span class="badge ' + esc(i.status) + ' corner">' + esc(i.status) + '</span>' : '';
-  const price = i.status === "sold" ? "Sold" : (num(i.price) > 0 ? money(i.price) : "Inquire");
+  const price = i.status === "sold" ? "Sold" : priceHTML(num(i.price));
   return '<button class="card" onclick="openItem(\'' + i.id + '\')">' +
     '<div class="ph">' + badge + img + '</div>' +
     '<div class="body"><h3>' + esc(i.title) + '</h3>' +
     (i.typeId ? '<div class="meta">' + esc(typeName(i.typeId)) + '</div>' : '') +
-    '<div class="price">' + price + '</div></div></button>';
+    '<div class="price">' + price + '</div>' +
+    (i.status !== "sold" && inCart(i.id) ? '<div class="meta">In your cart</div>' : '') +
+    '</div></button>';
 }
 
 function renderAbout(s){
@@ -1071,24 +1159,16 @@ function optionsHTML(it){
           : '');
     }
     return h + '</div>';
-  }).join("") +
-
-  // Always offered, options or not -- somewhere to say what they are after
-  // before they have given you their name.
-  '<div class="ogroup"><label class="f">Anything you want to say' +
-    (state.settings.content.siteName ? "" : "") + '</label>' +
-    '<div class="ohelp">Optional. A question, a date you need it by, how you came across the piece.</div>' +
-    '<textarea rows="3" maxlength="' + MSG_MAX + '" placeholder="Message to the artist..." ' +
-      'oninput="optSetMsg(this.value)">' + esc(optPick.msg || "") + '</textarea>' +
-    '<div class="ohelp" id="optMsgCount">' + String(optPick.msg || "").length + ' / ' + MSG_MAX + ' characters</div>' +
-  '</div>';
+  }).join("");
+  // The message box used to live here. It belongs on the request page now --
+  // one note about the whole order rather than one per piece.
 }
 
 function optRedraw(){
   const it = state.items.find(x => x.id === optPick.itemId); if (!it) return;
   const w = document.getElementById("optWrap"); if (w) w.innerHTML = optionsHTML(it);
   const p = document.getElementById("optPrice");
-  if (p) p.textContent = it.status === "sold" ? "Sold" : money(priceWith(it, optPick.sel));
+  if (p) p.innerHTML = it.status === "sold" ? "Sold" : priceHTML(priceWith(it, optPick.sel));
   const warn = document.getElementById("optWarn");
   if (warn){
     const left = optPick.gaps ? optionGaps(it, optPick.sel) : [];
@@ -1099,17 +1179,6 @@ function optRedraw(){
   }
 }
 
-// The gate on "Inquire to buy". Everything showing has to be answered first,
-// so she never has to go back and forth over email asking which glaze.
-function tryInquire(itemId){
-  const it = state.items.find(x => x.id === itemId); if (!it) return;
-  const left = optionGaps(it, optPick.sel);
-  if (!left.length) return openInquiry(itemId);
-  optPick.gaps = true;
-  optRedraw();
-  const first = document.querySelector("#optWrap .omiss");
-  if (first){ first.scrollIntoView({ block: "center", behavior: "smooth" }); try { first.focus(); } catch(e){} }
-}
 function optSetCount(gid, v){
   const s = optPick.sel[gid]; if (!s) return;
   s.count = num(v); optRedraw();
@@ -1137,10 +1206,113 @@ function optSetText(gid, k, v){
     if (ta) ta.classList.remove("omiss");
   }
 }
-function optSetMsg(v){
-  optPick.msg = v;
-  const el = document.getElementById("optMsgCount");
-  if (el) el.textContent = v.length + " / " + MSG_MAX + " characters";
+
+/* -----------------------------------------------------------------------
+   CART, PROMOS AND TOTALS
+   The cart lives in the visitor's own browser -- they are never signed in,
+   and nothing should reach the database until they actually send a request.
+
+   A line stores the selection it was built from, not just a price, so if a
+   price is edited in Studio the cart picks the change up instead of quoting
+   a figure that is no longer true.
+   ----------------------------------------------------------------------- */
+
+const CART_LS = "mgc_cart_v1";
+function cartLoad(){
+  try { const v = JSON.parse(localStorage.getItem(CART_LS)); state.cart = Array.isArray(v) ? v : []; }
+  catch(e){ state.cart = []; }
+}
+function cartSave(){
+  try { localStorage.setItem(CART_LS, JSON.stringify(state.cart)); } catch(e){}
+  renderCartCount();
+}
+const cartCount = () => state.cart.length;
+
+// Each piece is one of a kind, so an item is in the cart once. Adding it
+// again replaces the configuration rather than stacking a second copy.
+function cartAdd(itemId){
+  const it = state.items.find(x => x.id === itemId); if (!it) return false;
+  if (optionGaps(it, optPick.sel).length) return false;
+  const line = {
+    itemId: it.id,
+    title: it.title,
+    sel: (optPick.itemId === it.id) ? clone(optPick.sel) : defaultSel(it),
+    options: (optPick.itemId === it.id) ? optionSummary(it, optPick.sel) : [],
+    unit: (optPick.itemId === it.id) ? priceWith(it, optPick.sel) : num(it.price)
+  };
+  const at = state.cart.findIndex(l => l.itemId === it.id);
+  if (at >= 0) state.cart[at] = line; else state.cart.push(line);
+  cartSave();
+  return true;
+}
+function cartRemove(idx){ state.cart.splice(idx, 1); cartSave(); openCart(); }
+function cartClear(){ state.cart = []; cartSave(); }
+const inCart = id => state.cart.some(l => l.itemId === id);
+
+// Resolved against the live items every time, so a piece that sold or was
+// unpublished while sitting in someone's cart is caught rather than quoted.
+function cartLines(){
+  return state.cart.map((l, idx) => {
+    const it = state.items.find(x => x.id === l.itemId);
+    const name = (it && it.title) || l.title || "A piece";
+    if (!it || it.published === false) return { idx, problem:"gone", title:name, unit:0, options:l.options || [] };
+    if (it.status === "sold")          return { idx, problem:"sold", title:name, unit:0, options:l.options || [] };
+    const sel = l.sel || defaultSel(it);
+    return { idx, item:it, title:name, image:(it.images || [])[0] || "",
+             unit: priceWith(it, sel), options: optionSummary(it, sel) };
+  });
+}
+
+/* ---- promo codes ---- */
+const activePromos = () => (state.settings.promos || []).filter(p => p.active !== false && num(p.pct) > 0);
+const autoPromo = () => activePromos().find(p => p.auto) || null;
+const promoPct = p => Math.max(0, Math.min(100, num(p && p.pct)));
+
+// A typed code wins if it is real; otherwise an automatic one applies.
+// Only ever one -- discounts never stack, which keeps the arithmetic
+// explainable to a customer asking why they paid what they paid.
+function resolvePromo(typed){
+  const t = String(typed || "").trim();
+  if (t){
+    const hit = activePromos().find(p => String(p.code || "").trim().toLowerCase() === t.toLowerCase());
+    return hit ? { promo:hit, how:"code" } : { promo:null, how:"bad" };
+  }
+  const a = autoPromo();
+  return a ? { promo:a, how:"auto" } : { promo:null, how:"none" };
+}
+
+// What a price becomes on the storefront before anyone types anything.
+// Only an automatic promo shows here -- a code nobody has entered yet must
+// not quietly change the sticker price.
+function listPrice(n){
+  const a = autoPromo(), was = num(n);
+  if (!a) return { was: was, now: was, promo: null };
+  return { was: was, now: Math.round(was * (100 - promoPct(a))) / 100, promo: a };
+}
+
+const shipMethod = name => (state.settings.shipping.methods || []).find(m => m.name === name) || null;
+
+// Everything the order is made of, in one place, so the cart, the checkout
+// summary, the stored order and the email cannot drift apart.
+function orderTotals(typedCode, methodName){
+  const lines = cartLines();
+  const ok = lines.filter(l => !l.problem);
+  const subtotal = ok.reduce((s, l) => s + num(l.unit), 0);
+  const { promo, how } = resolvePromo(typedCode);
+  const pct = promo ? promoPct(promo) : 0;
+  const discount = Math.round(subtotal * pct) / 100;
+  const afterDiscount = subtotal - discount;
+  const sh = state.settings.shipping;
+  const m = shipMethod(methodName);
+  const pickup = methodName === "Local pickup";
+  // Free-shipping threshold is judged on what they actually pay for the
+  // pieces, so a discount can tip an order under it.
+  const free = num(sh.freeOver) > 0 && afterDiscount >= num(sh.freeOver);
+  const shipCost = pickup || free ? 0 : (m ? num(m.price) : 0);
+  return { lines, ok, problems: lines.filter(l => l.problem),
+           subtotal, promo, promoHow: how, pct, discount, afterDiscount,
+           shipName: methodName || "", shipCost, free: free && !pickup, pickup,
+           total: afterDiscount + shipCost };
 }
 
 function openItem(id){
@@ -1154,30 +1326,62 @@ function openItem(id){
   const specs = typeFields(i.typeId).filter(f => i.fields && i.fields[f.key])
     .map(f => '<div class="spec"><span>' + esc(f.label) + '</span><span>' + esc(i.fields[f.key]) + '</span></div>').join("");
   const sh = state.settings.shipping;
-  const shipLine = num(sh.freeOver) > 0 && num(i.price) >= num(sh.freeOver)
-    ? "Free shipping on this piece"
-    : (sh.methods && sh.methods[0] ? "Shipping from " + money(sh.methods[0].price) : "");
   const sold = i.status === "sold";
   optPick = { itemId: i.id, sel: defaultSel(i), msg: "", gaps: false };
   const hasOpts = liveOptions(i).length > 0;
+  const contactId = (visibleSections().find(s => s.kind === "contact") || {}).id;
   const info = '<div class="info">' +
     (i.status && i.status !== "available" ? '<span class="badge ' + esc(i.status) + '">' + esc(i.status) + '</span>' : '') +
     '<h2>' + esc(i.title) + '</h2>' +
     (i.typeId ? '<div class="meta" style="color:var(--dim);font-size:13px;letter-spacing:.07em;text-transform:uppercase">' + esc(typeName(i.typeId)) + '</div>' : '') +
-    '<div class="bigprice" id="optPrice">' + (sold ? "Sold" : (num(i.price) > 0 ? money(i.price) : "Price on request")) + '</div>' +
-    (hasOpts && !sold && num(i.price) > 0 ? '<div class="note" style="margin:-8px 0 14px">Updates as you choose below</div>' : '') +
-    (shipLine && !sold ? '<div class="note" style="margin-bottom:14px">' + esc(shipLine) + '</div>' : '') +
+    '<div class="bigprice" id="optPrice">' + (sold ? "Sold" : priceHTML(num(i.price))) + '</div>' +
+    (!sold ? '<div class="note" id="optPriceNote" style="margin:-8px 0 14px">' + priceNote(hasOpts && num(i.price) > 0) + '</div>' : '') +
     (i.description ? '<div class="prose" style="font-size:15.5px">' + i.description.split("\n\n").map(p => '<p>' + esc(p) + '</p>').join("") + '</div>' : '') +
     (specs ? '<div style="margin:18px 0">' + specs + '</div>' : '') +
-    // Rendered even with no option groups: the message box lives in here.
     (!sold ? '<div id="optWrap" class="optwrap">' + optionsHTML(i) + '</div>' : '') +
     '<div id="optWarn"></div>' +
     (sold
-      ? '<button class="btn ghost" onclick="openInquiry(\'' + i.id + '\')">Ask about something similar</button>'
-      : '<button class="btn" onclick="tryInquire(\'' + i.id + '\')">Inquire to buy</button>') +
-    (sh.localPickup && sh.pickupNote ? '<p class="note" style="margin-top:14px">' + esc(sh.pickupNote) + '</p>' : '') +
+      ? '<p class="note">This one has found a home.' +
+        (contactId ? ' For something similar, <button class="linkish" onclick="closeModal();go(\'' + contactId + '\')">get in touch</button>.' : '') + '</p>'
+      : '<div class="srow"><button class="btn" onclick="addToCart(\'' + i.id + '\')">' +
+          (inCart(i.id) ? "Update what's in your cart" : "Add to cart") + '</button>' +
+          (inCart(i.id) ? '<button class="btn ghost" onclick="closeModal();openCart()">View cart</button>' : '') +
+        '</div>' +
+        '<p class="note" style="margin-top:12px">Nothing is charged here. You send a request and ' +
+          'I reply to confirm the total and how to pay.</p>') +
+    (!sold && sh.localPickup && sh.pickupNote ? '<p class="note" style="margin-top:8px">' + esc(sh.pickupNote) + '</p>' : '') +
     '</div>';
   openModal('<div class="detail">' + shots + info + '</div>');
+}
+
+// A price as the storefront shows it, with an automatic discount struck
+// through so the saving is visible rather than just a smaller number.
+function priceHTML(base){
+  if (!(num(base) > 0)) return "Price on request";
+  const p = listPrice(base);
+  return p.promo
+    ? '<s class="wasprice">' + money(p.was) + '</s> ' + money(p.now)
+    : money(p.now);
+}
+function priceNote(showUpdates){
+  const a = autoPromo();
+  const bits = [];
+  if (a) bits.push('<b>' + promoPct(a) + '% off</b> applied automatically' + (a.label ? " -- " + esc(a.label) : ""));
+  if (showUpdates) bits.push("Updates as you choose below");
+  return bits.join(" &middot; ");
+}
+
+function addToCart(id){
+  const it = state.items.find(x => x.id === id); if (!it) return;
+  if (!cartAdd(id)){
+    // Same gate as before: everything on show has to be answered first.
+    optPick.gaps = true; optRedraw();
+    const first = document.querySelector("#optWrap .omiss");
+    if (first){ first.scrollIntoView({ block:"center", behavior:"smooth" }); try { first.focus(); } catch(e){} }
+    return;
+  }
+  closeModal();
+  toast(it.title + " added -- " + cartCount() + (cartCount() === 1 ? " piece" : " pieces") + " in your cart");
 }
 function swapShot(th, url){
   const m = document.getElementById("shotMain"); if (m) m.src = url;
@@ -1185,116 +1389,300 @@ function swapShot(th, url){
   th.classList.add("on");
 }
 
-function openInquiry(itemId){
-  const i = itemId ? state.items.find(x => x.id === itemId) : null;
-  const sh = state.settings.shipping;
-  const opts = (sh.methods || []).map(m =>
-    '<option value="' + esc(m.name) + '">' + esc(m.name) + " -- " + money(m.price) + '</option>').join("") +
-    (sh.localPickup ? '<option value="Local pickup">Local pickup -- free</option>' : '');
+/* -----------------------------------------------------------------------
+   THE CART AND THE REQUEST PAGE
+   Not a checkout. Nobody is charged, no card is taken. They tell you what
+   they want and how they would rather pay, and you reply to settle it.
+   ----------------------------------------------------------------------- */
 
-  // Only trust the picks if they belong to the item being inquired about --
-  // optPick holds whatever was open last, which may be something else.
-  const picked = (i && optPick.itemId === i.id) ? optionSummary(i, optPick.sel) : [];
-  const total  = picked.length ? priceWith(i, optPick.sel) : 0;
-  const recap = picked.length
-    ? '<div class="orecap"><div class="f" style="margin-bottom:8px">What you chose</div>' +
-        picked.map(p => '<div class="spec"><span>' + esc(p.label) + '</span><span>' + esc(p.value) + '</span></div>').join("") +
-        '<div class="spec"><span><b>Total</b></span><span><b>' + money(total) + '</b></span></div>' +
-        '<div class="note" style="margin-top:8px">Before shipping. Change anything by closing this and going back.</div></div>'
-    : '';
+function renderCartCount(){
+  const b = document.getElementById("cartBtn"); if (!b) return;
+  const n = cartCount();
+  b.innerHTML = 'Cart' + (n ? ' <span class="nbadge">' + n + '</span>' : '');
+  b.setAttribute("aria-label", n ? n + " in your cart" : "Your cart is empty");
+}
+
+function openCart(){
+  const t = orderTotals("", "");
+  if (!t.lines.length){
+    return openModal('<div style="padding:46px 34px;text-align:center">' +
+      '<h2>Your cart is empty</h2><p class="note">Nothing picked out yet.</p>' +
+      '<button class="btn ghost" style="margin-top:18px" onclick="closeModal()">Keep looking</button></div>', true);
+  }
+  openModal('<div style="padding:30px">' +
+    '<h2 style="margin-bottom:4px">Your cart</h2>' +
+    '<p class="note" style="margin-bottom:20px">Nothing is charged here. The next step sends me a request.</p>' +
+    cartLinesHTML(t, true) +
+    (t.problems.length
+      ? '<div class="owarn" style="margin-top:14px"><b>Some of these are no longer available</b> and have been left out of the total. ' +
+        'Remove them to carry on.</div>' : '') +
+    '<div class="orecap" style="margin-top:18px">' + totalsHTML(t) + '</div>' +
+    '<div class="srow" style="margin-top:18px">' +
+      (t.ok.length ? '<button class="btn" onclick="openCheckout()">Continue to request</button>' : '') +
+      '<button class="btn ghost" onclick="closeModal()">Keep looking</button>' +
+    '</div></div>');
+}
+
+function cartLinesHTML(t, withRemove){
+  return '<div class="clines">' + t.lines.map(l =>
+    '<div class="cline-item' + (l.problem ? ' dim' : '') + '">' +
+      (l.image ? '<img src="' + esc(l.image) + '" alt="">' : '<div class="noimg sm">No photo</div>') +
+      '<div class="ci-body"><b>' + esc(l.title) + '</b>' +
+        (l.problem
+          ? '<div class="ogap" style="margin-top:4px">' +
+            (l.problem === "sold" ? "Sold since you added it" : "No longer listed") + '</div>'
+          : (l.options || []).map(o =>
+              '<div class="tg">' + esc(o.label) + ': ' + esc(o.value) + '</div>').join("")) +
+      '</div>' +
+      '<div class="ci-right">' + (l.problem ? '' : '<b>' + money(l.unit) + '</b>') +
+        (withRemove ? '<button class="iconbtn del" title="Remove" onclick="cartRemove(' + l.idx + ')">&times;</button>' : '') +
+      '</div>' +
+    '</div>').join("") + '</div>';
+}
+
+function totalsHTML(t){
+  return '<div class="spec"><span>Subtotal</span><span>' + money(t.subtotal) + '</span></div>' +
+    (t.promo
+      ? '<div class="spec"><span>' + esc(t.promo.code || "Discount") + ' (' + t.pct + '% off)' +
+        (t.promoHow === "auto" ? ' <span class="tg">applied automatically</span>' : '') +
+        '</span><span>-' + money(t.discount) + '</span></div>' : '') +
+    (t.shipName
+      ? '<div class="spec"><span>' + esc(t.shipName) + '</span><span>' +
+        (t.shipCost ? money(t.shipCost) : (t.pickup ? "Free" : "Free shipping")) + '</span></div>'
+      : '<div class="spec"><span>Shipping</span><span class="tg">chosen on the next page</span></div>') +
+    '<div class="spec"><span><b>Total</b></span><span><b>' + money(t.total) + '</b></span></div>';
+}
+
+/* ---- the request page ---- */
+
+const US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA",
+  "ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
+  "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+
+// Kept outside the form so a re-render (promo applied, delivery changed)
+// does not wipe what they have already typed.
+let checkout = { code: "", applied: "", ship: "", err: "" };
+
+function openCheckout(){
+  const first = (state.settings.shipping.methods || [])[0];
+  if (!checkout.ship) checkout.ship = first ? first.name : (state.settings.shipping.localPickup ? "Local pickup" : "");
+  drawCheckout();
+}
+
+function drawCheckout(){
+  const t = orderTotals(checkout.applied, checkout.ship);
+  if (!t.ok.length) return openCart();
+  const sh = state.settings.shipping;
+  const pays = (state.settings.payments.methods || []).filter(x => String(x || "").trim());
+  const keep = id => { const el = document.getElementById(id); return el ? el.value : ""; };
+  const was = { name:keep("coName"), email:keep("coEmail"), phone:keep("coPhone"), street:keep("coStreet"),
+                apt:keep("coApt"), city:keep("coCity"), st:keep("coState"), zip:keep("coZip"), msg:keep("coMsg") };
+
+  const shipOpts = (sh.methods || []).map(m =>
+      '<option value="' + esc(m.name) + '"' + (checkout.ship === m.name ? " selected" : "") + '>' +
+      esc(m.name) + " -- " + money(m.price) + '</option>').join("") +
+    (sh.localPickup ? '<option value="Local pickup"' + (checkout.ship === "Local pickup" ? " selected" : "") +
+      '>Local pickup -- free</option>' : '');
 
   openModal('<div style="padding:30px">' +
-    '<h2 style="margin-bottom:4px">' + (i ? "Inquire: " + esc(i.title) : "Get in touch") + '</h2>' +
-    '<p class="note" style="margin-bottom:22px">Send this and I\'ll get back to you with payment details.</p>' +
-    recap +
-    '<form onsubmit="submitInquiry(event,\'' + esc(itemId || "") + '\')">' +
-    '<div class="row2"><div class="field"><label class="f">Your name</label><input name="name" required></div>' +
-    '<div class="field"><label class="f">Email</label><input type="email" name="email" required></div></div>' +
-    '<div class="field"><label class="f">Delivery</label><select name="shipping">' + opts + '</select></div>' +
-    // Carried over from the listing, still editable here so they are not
-    // sent back to retype it.
-    '<div class="field"><label class="f">Message</label><textarea name="message" maxlength="' + MSG_MAX + '" placeholder="' +
-      (i ? "Anything you want to ask about this piece..." : "What are you after?") + '">' +
-      esc((i && optPick.itemId === i.id) ? (optPick.msg || "") : "") + '</textarea></div>' +
-    '<button class="btn" type="submit">Send inquiry</button></form></div>', true);
+    '<h2 style="margin-bottom:4px">Request these pieces</h2>' +
+    '<p class="note" style="margin-bottom:22px">This is a request, not a payment. Nothing is charged and no card is taken ' +
+      '-- send it and I\'ll confirm the total and how to pay.</p>' +
+
+    '<div class="orecap" style="margin-bottom:22px">' + cartLinesHTML(t, false) +
+      '<div style="margin-top:12px">' + totalsHTML(t) + '</div></div>' +
+
+    '<form onsubmit="submitOrder(event)" autocomplete="on">' +
+      '<div class="row2">' +
+        '<div class="field"><label class="f">Your name</label><input id="coName" name="name" required autocomplete="name" value="' + esc(was.name) + '"></div>' +
+        '<div class="field"><label class="f">Email</label><input id="coEmail" type="email" name="email" required autocomplete="email" value="' + esc(was.email) + '"></div>' +
+      '</div>' +
+      '<div class="field"><label class="f">Phone</label><input id="coPhone" type="tel" name="phone" required autocomplete="tel" value="' + esc(was.phone) + '"></div>' +
+
+      '<label class="f" style="margin-top:4px">Shipping address</label>' +
+      '<p class="note" style="margin:-2px 0 10px">US addresses only for now.</p>' +
+      '<div class="row2">' +
+        '<div class="field"><label class="f">Street</label><input id="coStreet" name="street" required autocomplete="address-line1" value="' + esc(was.street) + '"></div>' +
+        '<div class="field"><label class="f">Apt / unit <span class="tg">optional</span></label><input id="coApt" name="apt" autocomplete="address-line2" value="' + esc(was.apt) + '"></div>' +
+      '</div>' +
+      '<div class="row3">' +
+        '<div class="field"><label class="f">City</label><input id="coCity" name="city" required autocomplete="address-level2" value="' + esc(was.city) + '"></div>' +
+        '<div class="field"><label class="f">State</label><select id="coState" name="state" required autocomplete="address-level1">' +
+          '<option value="">--</option>' +
+          US_STATES.map(s => '<option' + (was.st === s ? " selected" : "") + '>' + s + '</option>').join("") +
+        '</select></div>' +
+        '<div class="field"><label class="f">ZIP</label><input id="coZip" name="zip" required inputmode="numeric" ' +
+          'pattern="[0-9]{5}(-[0-9]{4})?" title="Five digits, or ZIP+4" autocomplete="postal-code" value="' + esc(was.zip) + '"></div>' +
+      '</div>' +
+
+      '<div class="row2">' +
+        '<div class="field"><label class="f">Delivery</label><select name="shipping" onchange="setCheckoutShip(this.value)">' + shipOpts + '</select></div>' +
+        '<div class="field"><label class="f">How you would rather pay</label>' +
+          (pays.length
+            ? '<select name="payment" required><option value="">--</option>' +
+              pays.map(p => '<option>' + esc(p) + '</option>').join("") + '</select>'
+            : '<input name="payment" placeholder="Tell me what suits you">') +
+        '</div>' +
+      '</div>' +
+      (state.settings.payments.note ? '<p class="note" style="margin:-6px 0 16px">' + esc(state.settings.payments.note) + '</p>' : '') +
+
+      '<div class="field"><label class="f">Promo code <span class="tg">optional</span></label>' +
+        '<div class="srow" style="gap:8px">' +
+          '<input id="coPromo" style="flex:1" value="' + esc(checkout.code) + '" placeholder="Enter a code" ' +
+            'oninput="checkout.code=this.value" onkeydown="if(event.key===\'Enter\'){event.preventDefault();applyPromo()}">' +
+          '<button class="btn ghost" type="button" onclick="applyPromo()">Apply</button>' +
+        '</div>' +
+        (checkout.err ? '<div class="ogap" style="margin-top:8px">' + esc(checkout.err) + '</div>' : '') +
+        (t.promo && t.promoHow === "code"
+          ? '<div class="ohelp" style="color:#1f7a4d"><b>' + esc(t.promo.code) + '</b> applied -- ' + t.pct + '% off</div>' : '') +
+      '</div>' +
+
+      '<div class="field"><label class="f">Anything you want to say <span class="tg">optional</span></label>' +
+        '<textarea id="coMsg" name="message" rows="3" maxlength="' + MSG_MAX + '" ' +
+          'placeholder="A date you need it by, a question, how you came across the work...">' + esc(was.msg) + '</textarea></div>' +
+
+      '<button class="btn" type="submit">Send my request</button> ' +
+      '<button class="btn ghost" type="button" onclick="openCart()">Back to cart</button>' +
+    '</form></div>');
 }
 
-// --- the alert email ----------------------------------------------------
-// One line per thing you need to know, so it is readable on a phone screen
-// without scrolling. Everything here comes from the customer, so newlines
-// are stripped from the subject -- a header is a single line by definition.
+function setCheckoutShip(v){ checkout.ship = v; drawCheckout(); }
+function applyPromo(){
+  const typed = String(checkout.code || "").trim();
+  if (!typed){ checkout.applied = ""; checkout.err = ""; return drawCheckout(); }
+  const { promo } = resolvePromo(typed);
+  if (promo){ checkout.applied = typed; checkout.err = ""; }
+  else { checkout.applied = ""; checkout.err = '"' + typed + '" is not a code I recognise.'; }
+  drawCheckout();
+}
+
+/* ---- the alert emails ---- */
+// One line per thing you need to know, readable on a phone without
+// scrolling. Everything here comes from a stranger, so newlines are
+// stripped from any subject -- a header is a single line by definition.
 function oneLine(v){ return String(v == null ? "" : v).replace(/[\r\n\t]+/g, " ").trim(); }
 
-function mailSubject(f, it){
-  const who = oneLine(f.get("name")).slice(0, 60);
-  const what = it ? oneLine(it.title).slice(0, 80) : "a general question";
-  return ("New inquiry -- " + what + (who ? " -- " + who : "")).slice(0, 250);
+function mailSubject(name){
+  const who = oneLine(name).slice(0, 60);
+  return ("New question" + (who ? " from " + who : "")).slice(0, 250);
 }
-
-function mailBody(f, it, chosen, total){
-  const L = [];
-  L.push("Somebody has asked to buy from your website.");
-  L.push("");
-  L.push("Name:      " + oneLine(f.get("name")));
-  L.push("Email:     " + oneLine(f.get("email")));
-  L.push("Wants:     " + (it ? oneLine(it.title) + (num(it.price) ? "  " + money(num(it.price)) : "")
-                             : "nothing specific -- general question"));
-  (chosen || []).forEach(p => L.push("  " + (oneLine(p.label) + ":").padEnd(9) + " " + oneLine(p.value)));
-  if (chosen && chosen.length) L.push("  Total:    " + money(total) + "  (before shipping)");
-  if (f.get("shipping")) L.push("Delivery:  " + oneLine(f.get("shipping")));
+function mailBody(f){
+  const L = ["Somebody has sent you a question from your website.", ""];
+  L.push("Name:    " + oneLine(f.get("name")));
+  L.push("Email:   " + oneLine(f.get("email")));
+  if (f.get("shipping")) L.push("Delivery: " + oneLine(f.get("shipping")));
   L.push("");
   const msg = String(f.get("message") || "").trim();
   L.push(msg ? "What they said:\n\n" + msg : "They did not leave a message.");
-  L.push("");
-  L.push("--");
-  L.push("Reply straight to this person at " + oneLine(f.get("email")) + ".");
-  L.push("Every inquiry is also kept in Studio > Inquiries.");
+  L.push("", "--", "Reply straight to them at " + oneLine(f.get("email")) + ".");
+  L.push("Kept in Studio > Inquiries.");
   return L.join("\n").slice(0, 7900);   // rules cap the field at 8000
 }
 
-async function submitInquiry(e, itemId){
+function orderSubject(o){
+  const who = oneLine(o.name).slice(0, 60);
+  return ("ORDER REQUEST -- " + money(o.total) + (who ? " -- " + who : "")).slice(0, 250);
+}
+function orderBody(o){
+  const L = ["Somebody has asked to buy from your website.", "",
+             "Nothing has been charged. They are waiting on you to confirm the total and how to pay.", ""];
+  L.push("Name:    " + oneLine(o.name));
+  L.push("Email:   " + oneLine(o.email));
+  L.push("Phone:   " + oneLine(o.phone));
+  L.push("Pay by:  " + oneLine(o.payment));
+  L.push("");
+  L.push("Ship to:");
+  L.push("  " + oneLine(o.address.street) + (o.address.apt ? ", " + oneLine(o.address.apt) : ""));
+  L.push("  " + oneLine(o.address.city) + ", " + oneLine(o.address.state) + " " + oneLine(o.address.zip));
+  L.push("");
+  L.push("What they want:");
+  (o.items || []).forEach(it => {
+    L.push("  " + oneLine(it.title) + "   " + money(it.unit));
+    (it.options || []).forEach(op => L.push("      " + oneLine(op.label) + ": " + oneLine(op.value)));
+  });
+  L.push("");
+  L.push("  Subtotal:  " + money(o.subtotal));
+  if (o.discountPct) L.push("  " + (oneLine(o.discountCode) || "Discount") + ":  -" + money(o.discountAmount) +
+                            "  (" + o.discountPct + "% off)");
+  L.push("  " + (oneLine(o.shipping) || "Shipping") + ":  " + (o.shippingCost ? money(o.shippingCost) : "free"));
+  L.push("  TOTAL:     " + money(o.total));
+  L.push("");
+  const msg = String(o.message || "").trim();
+  L.push(msg ? "What they said:\n\n" + msg : "They did not leave a message.");
+  L.push("", "--", "Reply straight to them at " + oneLine(o.email) + ".");
+  L.push("Kept in Studio > Orders.");
+  return L.join("\n").slice(0, 7900);
+}
+
+async function submitOrder(e){
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const btn = e.target.querySelector("button[type=submit]");
+  const t = orderTotals(checkout.applied, checkout.ship);
+  if (!t.ok.length){ toast("There is nothing left in your cart to request"); return openCart(); }
+  if (t.problems.length){ toast("Remove the pieces that are no longer available first"); return openCart(); }
+
+  btn.disabled = true; btn.textContent = "Sending...";
+  const order = {
+    name: f.get("name"), email: f.get("email"), phone: f.get("phone"),
+    address: { street: f.get("street"), apt: f.get("apt") || "", city: f.get("city"),
+               state: f.get("state"), zip: f.get("zip") },
+    payment: f.get("payment") || "",
+    shipping: t.shipName, shippingCost: t.shipCost,
+    items: t.ok.slice(0, 40).map(l => ({ title: l.title, unit: l.unit, options: (l.options || []).slice(0, 12) })),
+    subtotal: t.subtotal,
+    discountCode: t.promo ? (t.promo.code || "") : "",
+    discountPct: t.pct, discountAmount: t.discount,
+    total: t.total,
+    message: f.get("message") || "",
+    createdAt: Date.now(), status: "new"
+  };
+  try {
+    await store.addOrder(order);
+    // Saved by this point. The email is a bonus and must never surface as
+    // an error to the customer -- the order is not lost either way.
+    const notify = (state.settings.notifyEmail || "").trim();
+    if (notify){
+      try { await store.queueMail(notify, orderSubject(order), orderBody(order)); }
+      catch(err){ console.warn("Order saved; the email alert could not be queued:", err); }
+    }
+    cartClear();
+    checkout = { code:"", applied:"", ship:"", err:"" };
+    openModal('<div style="padding:46px 34px;text-align:center">' +
+      '<h2>Request sent</h2>' +
+      '<p class="note" style="margin-bottom:6px">' + esc(state.settings.orderPromise ||
+        "I'll review your request and get back to you within 24 hours to confirm the total and payment.") + '</p>' +
+      '<p class="note">Nothing has been charged. I\'ll reply to <b>' + esc(order.email) + '</b>.</p>' +
+      '<button class="btn ghost" style="margin-top:18px" onclick="closeModal()">Close</button></div>', true);
+  } catch(err){
+    console.error(err);
+    btn.disabled = false; btn.textContent = "Send my request";
+    toast("Could not send -- " + (err.message || "check your connection"));
+  }
+}
+
+async function submitInquiry(e){
   e.preventDefault();
   const f = new FormData(e.target);
   const btn = e.target.querySelector("button[type=submit]");
   btn.disabled = true; btn.textContent = "Sending...";
-  const it = itemId ? state.items.find(x => x.id === itemId) : null;
-  // tryInquire already checks this; repeated here because the form can also
-  // be reached by other routes, and a half-answered order is worse than none.
-  // (Reopening the item here would reset defaultSel and throw away the
-  // choices they did make, so this only stops and says so.)
-  const missing = (it && optPick.itemId === it.id) ? optionGaps(it, optPick.sel) : [];
-  if (missing.length){
-    btn.disabled = false; btn.textContent = "Send inquiry";
-    return toast("Still to choose: " + missing.map(x => x.why).join("; "));
-  }
-  const chosen = (it && optPick.itemId === it.id) ? optionSummary(it, optPick.sel) : [];
   try {
     await store.addInquiry({
       name: f.get("name"), email: f.get("email"),
       shipping: f.get("shipping") || "", message: f.get("message") || "",
-      itemId: itemId || "", itemTitle: it ? it.title : "", itemPrice: it ? num(it.price) : 0,
-      // The configured price, so she is not re-doing the sums by hand when
-      // the inquiry reaches her. Matches what the customer was shown.
-      options: chosen.slice(0, 12),
-      optionsTotal: chosen.length ? priceWith(it, optPick.sel) : 0
+      itemId: "", itemTitle: "", itemPrice: 0, options: [], optionsTotal: 0
     });
-
-    // The inquiry is safely saved by this point. Emailing it is a bonus, so
-    // a failure here must never reach the customer -- they did nothing wrong
-    // and the message is not lost. It still shows in Studio > Inquiries.
     const notify = (state.settings.notifyEmail || "").trim();
-    if (notify) {
-      try { await store.queueMail(notify, mailSubject(f, it),
-                                  mailBody(f, it, chosen, chosen.length ? priceWith(it, optPick.sel) : 0)); }
+    if (notify){
+      try { await store.queueMail(notify, mailSubject(f.get("name")), mailBody(f)); }
       catch(err){ console.warn("Inquiry saved; the email alert could not be queued:", err); }
     }
-
     openModal('<div style="padding:46px 34px;text-align:center">' +
-      '<h2>Thank you</h2><p class="note">Your inquiry is in. I\'ll reply to ' + esc(f.get("email")) + ' shortly.</p>' +
+      '<h2>Thank you</h2><p class="note">Your note is in. I\'ll reply to ' + esc(f.get("email")) + ' shortly.</p>' +
       '<button class="btn ghost" style="margin-top:18px" onclick="closeModal()">Close</button></div>', true);
   } catch(err){
     console.error(err);
-    btn.disabled = false; btn.textContent = "Send inquiry";
+    btn.disabled = false; btn.textContent = "Send";
     toast("Could not send -- " + (err.message || "check your connection"));
   }
 }
@@ -1305,9 +1693,9 @@ function renderContact(s){
     '<option value="' + esc(m.name) + '">' + esc(m.name) + " -- " + money(m.price) + '</option>').join("") +
     (sh.localPickup ? '<option value="Local pickup">Local pickup -- free</option>' : '');
   return '<div class="form-card">' + (s.body ? '<p class="note" style="margin-top:0">' + esc(s.body) + '</p>' : '') +
-    '<form onsubmit="submitInquiry(event,\'\')">' +
-    '<div class="row2"><div class="field"><label class="f">Your name</label><input name="name" required></div>' +
-    '<div class="field"><label class="f">Email</label><input type="email" name="email" required></div></div>' +
+    '<form onsubmit="submitInquiry(event)">' +
+    '<div class="row2"><div class="field"><label class="f">Your name</label><input name="name" required autocomplete="name"></div>' +
+    '<div class="field"><label class="f">Email</label><input type="email" name="email" required autocomplete="email"></div></div>' +
     '<div class="field"><label class="f">Delivery preference</label><select name="shipping">' + opts + '</select></div>' +
     '<div class="field"><label class="f">Message</label><textarea name="message" required></textarea></div>' +
     '<button class="btn" type="submit">Send</button></form></div>';
@@ -1360,7 +1748,9 @@ const TABS = [
   ["types",    "Item types"],
   ["calc",     "Price calculator"],
   ["shipping", "Shipping"],
+  ["selling",  "Payment & promos"],
   ["socials",  "Socials"],
+  ["orders",   "Orders"],
   ["inbox",    "Inquiries"],
   ["setup",    "Setup"]
 ];
@@ -1374,11 +1764,11 @@ function dirty(v){
 }
 
 function renderStudio(){
-  const n = newInquiries().length;
+  const counts = { inbox: newInquiries().length, orders: newOrders().length };
   $("#sbar").innerHTML =
     '<div class="logo">' + esc(state.settings.content.siteName) + '<small>Studio</small></div>' +
     TABS.map(t => '<button class="' + (state.studioTab === t[0] ? "on" : "") + '" onclick="studioTab(\'' + t[0] + '\')">' +
-      t[1] + (t[0] === "inbox" && n ? ' <span class="nbadge">' + n + '</span>' : '') +
+      t[1] + (counts[t[0]] ? ' <span class="nbadge">' + counts[t[0]] + '</span>' : '') +
       '</button>').join("") +
     '<div class="sp"></div>' +
     '<button onclick="closeStudio()">&larr; View site</button>' +
@@ -1389,7 +1779,8 @@ function renderStudio(){
 
   const body = {
     look:     tabLook, sections: tabSections, items: tabItems, types: tabTypes,
-    calc:     tabCalc, shipping: tabShipping, socials: tabSocials, inbox: tabInbox, setup: tabSetup
+    calc:     tabCalc, shipping: tabShipping, selling: tabSelling, socials: tabSocials,
+    orders:   tabOrders, inbox: tabInbox, setup: tabSetup
   }[state.studioTab];
   $("#spane").innerHTML = (state.mode === "local" ? localBanner() : "") + (body ? body() : "") +
     '<div class="savebar"><span class="st">' + (state.dirty ? "Unsaved changes" :
@@ -2129,6 +2520,147 @@ async function postSave(){
 }
 
 /* ---------------- INQUIRIES ---------------- */
+/* ---------------- PAYMENT & PROMOS ---------------- */
+
+function payAdd(){ state.settings.payments.methods.push(""); dirty(true); renderStudio(); }
+function payDel(n){ state.settings.payments.methods.splice(n, 1); dirty(true); renderStudio(); }
+function paySet(n, v){ state.settings.payments.methods[n] = v; dirty(true); }
+function payNote(v){ state.settings.payments.note = v; dirty(true); }
+function promoAdd(){
+  state.settings.promos.push({ id: uid("pr_"), code:"", pct:10, active:true, auto:false, label:"" });
+  dirty(true); renderStudio();
+}
+function promoDel(n){ state.settings.promos.splice(n, 1); dirty(true); renderStudio(); }
+function promoSet(n, k, v, re){
+  const P = state.settings.promos;
+  P[n][k] = v;
+  // Only one code can be the automatic one, or the storefront price would
+  // depend on which happened to be first in the list.
+  if (k === "auto" && v) P.forEach((p, i) => { if (i !== n) p.auto = false; });
+  dirty(true); if (re) renderStudio();
+}
+function setPromise(v){ state.settings.orderPromise = v; dirty(true); }
+
+function tabSelling(){
+  const pay = state.settings.payments, P = state.settings.promos || [];
+  const auto = autoPromo();
+  return '<h2>Payment &amp; promos</h2>' +
+  '<p class="sub">Your site never charges anybody. People send a request, you confirm it and take payment however you two agree.</p>' +
+
+  '<div class="sbox"><h3>How people can say they want to pay</h3>' +
+    '<div class="hint" style="margin-top:0">These fill the dropdown on the request page. It is only a preference they are ' +
+      'telling you -- no account details are collected and nothing is processed.</div>' +
+    (pay.methods || []).map((m, n) => '<div class="srow" style="margin-top:10px">' +
+      '<input style="flex:1" value="' + esc(m) + '" placeholder="e.g. Venmo" oninput="paySet(' + n + ',this.value)">' +
+      '<button class="iconbtn del" title="Remove" onclick="payDel(' + n + ')">&times;</button></div>').join("") +
+    '<button class="btn ghost" style="margin-top:12px" onclick="payAdd()">+ Add a way to pay</button>' +
+    '<div class="field" style="margin-top:18px"><label class="f">A line under the dropdown (optional)</label>' +
+      '<input value="' + esc(pay.note || "") + '" oninput="payNote(this.value)"></div>' +
+  '</div>' +
+
+  '<div class="sbox"><h3>What they see after sending</h3>' +
+    '<div class="field" style="margin-top:12px"><label class="f">Your promise on the thank-you screen</label>' +
+      '<textarea rows="2" oninput="setPromise(this.value)">' + esc(state.settings.orderPromise || "") + '</textarea></div>' +
+    '<div class="hint">Keep it to something you can actually keep. It is the last thing they read.</div>' +
+  '</div>' +
+
+  '<div class="sbox"><h3>Promo codes</h3>' +
+    '<div class="hint" style="margin-top:0">A percentage off the pieces. Shipping is never discounted. ' +
+      'Only one code applies to an order -- they do not stack.</div>' +
+    (auto ? '<div class="banner" style="margin:14px 0 0"><b>' + esc(auto.code || "An automatic code") + ' is running for everyone.</b> ' +
+      promoPct(auto) + '% comes off every listing, with the old price struck through, and nobody has to type anything.</div>' : '') +
+    (P.length
+      ? '<table class="stable ctable" style="margin-top:14px"><tr><th>Code</th><th style="width:90px">% off</th>' +
+        '<th style="width:110px">Live</th><th style="width:150px">Everyone gets it</th><th style="width:44px"></th></tr>' +
+        P.map((p, n) => '<tr>' +
+          '<td><input class="' + (String(p.code || "").trim() ? "" : "omiss") + '" value="' + esc(p.code || "") +
+            '" placeholder="e.g. WELCOME10" oninput="promoSet(' + n + ',\'code\',this.value)" ' +
+            'onchange="promoSet(' + n + ',\'code\',this.value,1)"></td>' +
+          '<td><input type="number" min="1" max="100" value="' + promoPct(p) + '" oninput="promoSet(' + n + ',\'pct\',+this.value,1)"></td>' +
+          '<td><label class="srow" style="gap:8px"><span class="sw"><input type="checkbox" ' + (p.active !== false ? "checked" : "") +
+            ' onchange="promoSet(' + n + ',\'active\',this.checked,1)"><i></i></span></label></td>' +
+          '<td><label class="srow" style="gap:8px"><span class="sw"><input type="checkbox" ' + (p.auto ? "checked" : "") +
+            ' onchange="promoSet(' + n + ',\'auto\',this.checked,1)"><i></i></span></label></td>' +
+          '<td><div class="qacts"><button class="iconbtn del" title="Remove" onclick="promoDel(' + n + ')">&times;</button></div></td>' +
+        '</tr>').join("") + '</table>'
+      : '<div class="hint">No codes yet.</div>') +
+    '<button class="btn ghost" style="margin-top:12px" onclick="promoAdd()">+ Add a code</button>' +
+    '<div class="hint"><b>Live</b> off parks a code without deleting it. <b>Everyone gets it</b> applies it ' +
+      'automatically with nothing typed, and shows the discount on your listings -- only one code can do that at a time. ' +
+      'A code with no name is ignored.</div>' +
+  '</div>';
+}
+
+/* ---------------- ORDERS ---------------- */
+
+async function oSeen(id, seen){
+  try { await store.seenOrder(id, seen); } catch(e){ toast("Could not update that: " + ((e && e.code) || "unknown")); }
+  renderAlerts(); renderStudio();
+}
+async function oSeenAll(){
+  try { await store.seenAllOrders(); toast("All marked as seen"); }
+  catch(e){ toast("Could not update those: " + ((e && e.code) || "unknown")); }
+  renderAlerts(); renderStudio();
+}
+async function oDel(id){
+  if (!confirm("Delete this order request? This cannot be undone.")) return;
+  await store.delOrder(id); renderAlerts(); renderStudio();
+}
+
+function tabOrders(){
+  const O = state.orders, n = newOrders().length;
+  return '<h2>Orders</h2><p class="sub">People who have asked to buy. Nothing has been charged -- you confirm the total and take payment yourself.</p>' +
+  (O.length
+    ? (n ? '<div class="srow" style="margin:0 0 14px"><b>' + n + (n === 1 ? ' request' : ' requests') + ' you have not looked at</b>' +
+           '<span class="sp"></span><button class="btn ghost" onclick="oSeenAll()">Mark all as seen</button></div>' : '') +
+      O.map(o => {
+        const a = o.address || {};
+        return '<div class="sbox obox' + (o.status === "new" ? " onew" : "") + '">' +
+          '<div class="srow" style="margin-bottom:12px">' +
+            (o.status === "new" ? '<span class="nbadge">New</span> ' : '') +
+            '<b style="font-size:16px">' + esc(o.name) + '</b>' +
+            '<span class="tg">' + new Date(o.createdAt || 0).toLocaleString() + '</span>' +
+            '<span class="sp"></span>' +
+            '<b style="font-size:18px">' + money(o.total) + '</b>' +
+            '<button class="iconbtn" title="' + (o.status === "new" ? "Mark as seen" : "Mark as new again") + '" ' +
+              'onclick="oSeen(\'' + o.id + '\',' + (o.status === "new" ? "true" : "false") + ')">' +
+              (o.status === "new" ? "&#10003;" : "&#8634;") + '</button>' +
+            '<a class="iconbtn" style="text-decoration:none" title="Reply" href="mailto:' + esc(o.email) +
+              '?subject=' + encodeURIComponent("Your order -- " + (state.settings.content.siteName || "")) + '">&#9993;</a>' +
+            '<button class="iconbtn del" title="Delete" onclick="oDel(\'' + o.id + '\')">&times;</button>' +
+          '</div>' +
+          '<div class="row2">' +
+            '<div><div class="f">Contact</div>' +
+              '<div class="cline"><span>Email</span><b>' + esc(o.email) + '</b></div>' +
+              '<div class="cline"><span>Phone</span><b>' + esc(o.phone || "--") + '</b></div>' +
+              '<div class="cline"><span>Wants to pay by</span><b>' + esc(o.payment || "--") + '</b></div>' +
+            '</div>' +
+            '<div><div class="f">Ship to</div>' +
+              '<div class="addr">' + esc(o.name) + '<br>' + esc(a.street || "") +
+                (a.apt ? '<br>' + esc(a.apt) : '') + '<br>' +
+                esc(a.city || "") + ', ' + esc(a.state || "") + ' ' + esc(a.zip || "") + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="f" style="margin-top:16px">What they want</div>' +
+          '<table class="stable">' + (o.items || []).map(it =>
+            '<tr><td><b>' + esc(it.title) + '</b>' +
+              (it.options || []).map(op => '<div class="tg">' + esc(op.label) + ': ' + esc(op.value) + '</div>').join("") +
+            '</td><td style="text-align:right;white-space:nowrap">' + money(it.unit) + '</td></tr>').join("") + '</table>' +
+          '<div style="max-width:320px;margin-left:auto;margin-top:10px">' +
+            '<div class="cline"><span>Subtotal</span><b>' + money(o.subtotal) + '</b></div>' +
+            (o.discountPct ? '<div class="cline pos"><span>' + esc(o.discountCode || "Discount") + ' (' + o.discountPct +
+              '%)</span><b>-' + money(o.discountAmount) + '</b></div>' : '') +
+            '<div class="cline"><span>' + esc(o.shipping || "Shipping") + '</span><b>' +
+              (num(o.shippingCost) ? money(o.shippingCost) : "Free") + '</b></div>' +
+            '<div class="cline total"><span>Total</span><b>' + money(o.total) + '</b></div>' +
+          '</div>' +
+          (o.message ? '<div class="f" style="margin-top:14px">Their message</div>' +
+            '<div class="omsg">' + esc(o.message) + '</div>' : '') +
+        '</div>';
+      }).join("")
+    : '<div class="sbox"><div class="hint">No order requests yet.</div></div>');
+}
+
 function tabInbox(){
   const Q = state.inquiries, n = newInquiries().length;
   const p = alertPrefs();
@@ -2292,6 +2824,7 @@ document.addEventListener("keydown", e => {
 window.addEventListener("beforeunload", e => { if (state.dirty){ e.preventDefault(); e.returnValue = ""; } });
 
 (async function boot(){
+  cartLoad();            // before the first render, so the badge is right away
   await store.init();
   applyTheme();
   renderSite();
