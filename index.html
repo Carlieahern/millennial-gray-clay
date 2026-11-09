@@ -169,6 +169,15 @@ footer.site .sp{margin-left:auto}
 .ocustom textarea{width:100%}
 .ocount{max-width:110px}
 .orecap{border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:22px}
+/* "You missed this" markers. Fixed colours rather than theme variables: a
+   warning has to stay legible whatever palette she picks, and this pair is
+   ~8:1 on its own tint. */
+.omiss{border-color:#b3261e}
+.ogap,.owarn{background:#fdecea;color:#8c1d18;border-radius:var(--radius-sm)}
+.ogap{display:inline-block;align-self:flex-start;font-size:12.5px;font-weight:500;padding:4px 9px;margin-top:-2px}
+.owarn{padding:12px 16px;margin-bottom:16px;font-size:13.5px;line-height:1.5}
+.owarn ul{margin:6px 0 0;padding-left:18px}
+.owarn li{margin-top:3px}
 .orecap .spec:last-of-type{border-bottom:0}
 
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(140%);background:var(--text);color:var(--bg);
@@ -919,25 +928,52 @@ const groupCount = (g, s) => g.kind === "count"
   ? Math.max(1, Math.min(groupMax(g), num(s && s.count) || 1)) : 1;
 const findChoice = (g, id) => (g.choices || []).find(c => c.id === id) || null;
 
-// What the visitor has picked on the item that is open right now.
-let optPick = { itemId: null, sel: {} };
+// Room for a real note without letting anyone paste a novel into Firestore.
+// The rules cap `message` at 5000; this stays well under it.
+const MSG_MAX = 1500;
+
+// What the visitor has picked on the item that is open right now, plus
+// their note. gaps turns on once they have tried to send with something
+// unanswered -- nagging before they have had a go is just rude.
+let optPick = { itemId: null, sel: {}, msg: "", gaps: false };
 
 function defaultSel(it){
   const sel = {};
   itemOptions(it).forEach(g => {
-    const first = (g.choices || [])[0];
     const slots = g.kind === "count" ? groupMax(g) : 1;
     const picks = [], texts = [];
     for (let k = 0; k < slots; k++){
-      // An optional group starts on nothing, so "no thanks" is the default
-      // and she never gets an inquiry for an upsell they did not want.
-      picks[k] = g.required === false ? "" : (first ? first.id : "");
+      // Nothing is pre-selected. Every visible dropdown has to be answered
+      // deliberately, so an inquiry can never arrive carrying a default the
+      // buyer never looked at -- these are made to order.
+      picks[k] = "";
       texts[k] = "";
     }
     sel[g.id] = { count: 1, picks: picks, texts: texts };
   });
   return sel;
 }
+
+// Everything on show must be answered: each dropdown picked, and each text
+// box that a "lets them type" entry revealed filled in.
+function optionGaps(it, sel){
+  const gaps = [];
+  itemOptions(it).forEach(g => {
+    const s = sel[g.id] || {};
+    const n = groupCount(g, s);
+    for (let k = 0; k < n; k++){
+      const which = (g.kind === "count" && n > 1) ? " #" + (k + 1) : "";
+      const c = findChoice(g, (s.picks || [])[k]);
+      if (!c) gaps.push({ gid: g.id, k: k, kind: "pick",
+                          why: (g.label || "Options") + which + " -- nothing chosen yet" });
+      else if (c.custom && !String((s.texts || [])[k] || "").trim())
+        gaps.push({ gid: g.id, k: k, kind: "text",
+                    why: (g.label || "Options") + which + ' -- "' + c.label + '" needs a few words' });
+    }
+  });
+  return gaps;
+}
+const gapAt = (gaps, gid, k, kind) => gaps.some(x => x.gid === gid && x.k === k && x.kind === kind);
 
 function priceWith(it, sel){
   let total = num(it.price);
@@ -973,6 +1009,8 @@ function optionSummary(it, sel){
 
 function optionsHTML(it){
   const sel = optPick.sel;
+  const show = !!optPick.gaps;
+  const gaps = show ? optionGaps(it, sel) : [];
   return itemOptions(it).map(g => {
     const s = sel[g.id] || {};
     const n = groupCount(g, s);
@@ -990,23 +1028,37 @@ function optionsHTML(it){
     for (let k = 0; k < n; k++){
       const picked = (s.picks || [])[k] || "";
       const c = findChoice(g, picked);
+      const missPick = show && gapAt(gaps, g.id, k, "pick");
+      const missText = show && gapAt(gaps, g.id, k, "text");
       h += '<div class="orow">' +
         (g.kind === "count" ? '<span class="onum">' + (k + 1) + '</span>' : '') +
-        '<select onchange="optSetPick(\'' + g.id + '\',' + k + ',this.value)">' +
-        (g.required === false ? '<option value=""' + (picked ? "" : " selected") + '>-- none --</option>' : '') +
+        '<select class="' + (missPick ? "omiss" : "") + '" onchange="optSetPick(\'' + g.id + '\',' + k + ',this.value)">' +
+        '<option value=""' + (picked ? "" : " selected") + '>-- choose --</option>' +
         (g.choices || []).map(ch => '<option value="' + esc(ch.id) + '"' + (ch.id === picked ? " selected" : "") + '>' +
           esc(ch.label) + (num(ch.add) ? "  +" + money(ch.add) : "") + '</option>').join("") +
         '</select></div>' +
+        (missPick ? '<div class="ogap">Pick one of these</div>' : '') +
         (c && c.custom
-          ? '<div class="ocustom"><textarea rows="2" maxlength="' + limit + '" placeholder="' +
+          ? '<div class="ocustom"><textarea class="' + (missText ? "omiss" : "") + '" rows="2" maxlength="' + limit + '" placeholder="' +
               esc(g.customLabel || "Tell me what you would like") + '" ' +
               'oninput="optSetText(\'' + g.id + '\',' + k + ',this.value)">' + esc((s.texts || [])[k] || "") + '</textarea>' +
+            (missText ? '<div class="ogap">This one needs a few words</div>' : '') +
             '<div class="ohelp" id="oc_' + g.id + '_' + k + '">' +
               String((s.texts || [])[k] || "").length + ' / ' + limit + ' characters</div></div>'
           : '');
     }
     return h + '</div>';
-  }).join("");
+  }).join("") +
+
+  // Always offered, options or not -- somewhere to say what they are after
+  // before they have given you their name.
+  '<div class="ogroup"><label class="f">Anything you want to say' +
+    (state.settings.content.siteName ? "" : "") + '</label>' +
+    '<div class="ohelp">Optional. A question, a date you need it by, how you came across the piece.</div>' +
+    '<textarea rows="3" maxlength="' + MSG_MAX + '" placeholder="Message to the artist..." ' +
+      'oninput="optSetMsg(this.value)">' + esc(optPick.msg || "") + '</textarea>' +
+    '<div class="ohelp" id="optMsgCount">' + String(optPick.msg || "").length + ' / ' + MSG_MAX + ' characters</div>' +
+  '</div>';
 }
 
 function optRedraw(){
@@ -1014,6 +1066,26 @@ function optRedraw(){
   const w = document.getElementById("optWrap"); if (w) w.innerHTML = optionsHTML(it);
   const p = document.getElementById("optPrice");
   if (p) p.textContent = it.status === "sold" ? "Sold" : money(priceWith(it, optPick.sel));
+  const warn = document.getElementById("optWarn");
+  if (warn){
+    const left = optPick.gaps ? optionGaps(it, optPick.sel) : [];
+    warn.innerHTML = left.length
+      ? '<div class="owarn"><b>' + (left.length === 1 ? "One thing left" : left.length + " things left") + ':</b><ul>' +
+        left.map(x => '<li>' + esc(x.why) + '</li>').join("") + '</ul></div>'
+      : "";
+  }
+}
+
+// The gate on "Inquire to buy". Everything showing has to be answered first,
+// so she never has to go back and forth over email asking which glaze.
+function tryInquire(itemId){
+  const it = state.items.find(x => x.id === itemId); if (!it) return;
+  const left = optionGaps(it, optPick.sel);
+  if (!left.length) return openInquiry(itemId);
+  optPick.gaps = true;
+  optRedraw();
+  const first = document.querySelector("#optWrap .omiss");
+  if (first){ first.scrollIntoView({ block: "center", behavior: "smooth" }); try { first.focus(); } catch(e){} }
 }
 function optSetCount(gid, v){
   const s = optPick.sel[gid]; if (!s) return;
@@ -1029,11 +1101,23 @@ function optSetText(gid, k, v){
   const s = optPick.sel[gid]; if (!s) return;
   s.texts[k] = v;
   // Deliberately no redraw here -- rebuilding the block mid-sentence would
-  // throw the cursor out of the textarea. Only the counter needs updating.
+  // throw the cursor out of the textarea. Only the counter needs updating,
+  // and the "needs a few words" marker needs clearing by hand because of it.
   const it = state.items.find(x => x.id === optPick.itemId);
   const g = it && itemOptions(it).find(g => g.id === gid);
   const el = document.getElementById("oc_" + gid + "_" + k);
   if (el && g) el.textContent = v.length + " / " + Math.max(1, Math.min(500, num(g.customLimit) || 120)) + " characters";
+  if (el && v.trim()){
+    const box = el.parentNode;
+    box.querySelectorAll(".ogap").forEach(x => x.remove());
+    const ta = box.querySelector("textarea");
+    if (ta) ta.classList.remove("omiss");
+  }
+}
+function optSetMsg(v){
+  optPick.msg = v;
+  const el = document.getElementById("optMsgCount");
+  if (el) el.textContent = v.length + " / " + MSG_MAX + " characters";
 }
 
 function openItem(id){
@@ -1051,7 +1135,7 @@ function openItem(id){
     ? "Free shipping on this piece"
     : (sh.methods && sh.methods[0] ? "Shipping from " + money(sh.methods[0].price) : "");
   const sold = i.status === "sold";
-  optPick = { itemId: i.id, sel: defaultSel(i) };
+  optPick = { itemId: i.id, sel: defaultSel(i), msg: "", gaps: false };
   const hasOpts = itemOptions(i).length > 0;
   const info = '<div class="info">' +
     (i.status && i.status !== "available" ? '<span class="badge ' + esc(i.status) + '">' + esc(i.status) + '</span>' : '') +
@@ -1062,10 +1146,12 @@ function openItem(id){
     (shipLine && !sold ? '<div class="note" style="margin-bottom:14px">' + esc(shipLine) + '</div>' : '') +
     (i.description ? '<div class="prose" style="font-size:15.5px">' + i.description.split("\n\n").map(p => '<p>' + esc(p) + '</p>').join("") + '</div>' : '') +
     (specs ? '<div style="margin:18px 0">' + specs + '</div>' : '') +
-    (hasOpts && !sold ? '<div id="optWrap" class="optwrap">' + optionsHTML(i) + '</div>' : '') +
+    // Rendered even with no option groups: the message box lives in here.
+    (!sold ? '<div id="optWrap" class="optwrap">' + optionsHTML(i) + '</div>' : '') +
+    '<div id="optWarn"></div>' +
     (sold
       ? '<button class="btn ghost" onclick="openInquiry(\'' + i.id + '\')">Ask about something similar</button>'
-      : '<button class="btn" onclick="openInquiry(\'' + i.id + '\')">Inquire to buy</button>') +
+      : '<button class="btn" onclick="tryInquire(\'' + i.id + '\')">Inquire to buy</button>') +
     (sh.localPickup && sh.pickupNote ? '<p class="note" style="margin-top:14px">' + esc(sh.pickupNote) + '</p>' : '') +
     '</div>';
   openModal('<div class="detail">' + shots + info + '</div>');
@@ -1102,8 +1188,11 @@ function openInquiry(itemId){
     '<div class="row2"><div class="field"><label class="f">Your name</label><input name="name" required></div>' +
     '<div class="field"><label class="f">Email</label><input type="email" name="email" required></div></div>' +
     '<div class="field"><label class="f">Delivery</label><select name="shipping">' + opts + '</select></div>' +
-    '<div class="field"><label class="f">Message</label><textarea name="message" placeholder="' +
-      (i ? "Anything you want to ask about this piece..." : "What are you after?") + '"></textarea></div>' +
+    // Carried over from the listing, still editable here so they are not
+    // sent back to retype it.
+    '<div class="field"><label class="f">Message</label><textarea name="message" maxlength="' + MSG_MAX + '" placeholder="' +
+      (i ? "Anything you want to ask about this piece..." : "What are you after?") + '">' +
+      esc((i && optPick.itemId === i.id) ? (optPick.msg || "") : "") + '</textarea></div>' +
     '<button class="btn" type="submit">Send inquiry</button></form></div>', true);
 }
 
@@ -1146,6 +1235,15 @@ async function submitInquiry(e, itemId){
   const btn = e.target.querySelector("button[type=submit]");
   btn.disabled = true; btn.textContent = "Sending...";
   const it = itemId ? state.items.find(x => x.id === itemId) : null;
+  // tryInquire already checks this; repeated here because the form can also
+  // be reached by other routes, and a half-answered order is worse than none.
+  // (Reopening the item here would reset defaultSel and throw away the
+  // choices they did make, so this only stops and says so.)
+  const missing = (it && optPick.itemId === it.id) ? optionGaps(it, optPick.sel) : [];
+  if (missing.length){
+    btn.disabled = false; btn.textContent = "Send inquiry";
+    return toast("Still to choose: " + missing.map(x => x.why).join("; "));
+  }
   const chosen = (it && optPick.itemId === it.id) ? optionSummary(it, optPick.sel) : [];
   try {
     await store.addInquiry({
@@ -1610,7 +1708,7 @@ function itemModal(){
 
 function newGroup(kind, preset){
   const mk = (l, add) => ({ id: uid("c_"), label: l, add: add || 0, custom: false });
-  const common = { id: uid("g_"), label: "", required: true, help: "",
+  const common = { id: uid("g_"), label: "", help: "",
                    customLabel: "Tell me what you would like", customLimit: 120 };
   if (preset === "size")
     return Object.assign(common, { kind:"choice", label:"Size",
@@ -1649,7 +1747,11 @@ function optionsEditor(){
     '<span class="sw"><input type="checkbox" ' + (on ? "checked" : "") + ' onchange="optsOn(this.checked)"><i></i></span>' +
     '<span><b>This one has choices to make</b></span></label>' +
     '<div class="hint" style="margin-top:0">Sizes, glazes, how many donuts on the sculpture. Leave it off and the ' +
-      'piece is simply bought as it is -- most will be.</div></div>';
+      'piece is simply bought as it is -- most will be.</div>' +
+    (on ? '<div class="hint"><b>Anything on show has to be answered.</b> Every dropdown starts on ' +
+      '<i>-- choose --</i> and the Inquire button will not go through until they have picked, so you never get ' +
+      'an inquiry with a gap in it. Same for a text box once they pick the entry that opens it.</div>' : '') +
+    '</div>';
   if (!on) return h;
 
   h += O.map((g, n) => {
@@ -1681,11 +1783,6 @@ function optionsEditor(){
             money(num(draft.price) + num(g.perExtra) * 2) + ' before any choice adds to it. ' +
             'Want them priced flat instead? Put the full price in that second box.</div>'
         : '') +
-
-      '<label class="srow" style="gap:10px;margin-bottom:12px">' +
-        '<span class="sw"><input type="checkbox" ' + (g.required === false ? "" : "checked") +
-          ' onchange="gSet(' + n + ',\'required\',this.checked,1)"><i></i></span>' +
-        '<span>They have to choose' + (g.required === false ? ' <span class="tg">-- right now they can skip it</span>' : '') + '</span></label>' +
 
       '<div class="field"><label class="f">A line of help underneath (optional)</label>' +
         '<input value="' + esc(g.help || "") + '" placeholder="e.g. Measured across the widest point" ' +

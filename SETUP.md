@@ -159,15 +159,29 @@ entry — call it "Custom" — and a text box appears when they pick it. Set
 **characters they get** to whatever suits that piece; it's per group, so a
 short engraving and a long description can live on different items.
 
-**Making a choice skippable.** Turn off **they have to choose** and the
-dropdown gains a `-- none --` entry, which it starts on. Use it for add-ons
-like a stand, so nobody is pushed into buying one.
+**Everything on show has to be answered.** Nothing is pre-selected — every
+dropdown starts on `-- choose --`, and **Inquire to buy** won't go through
+until they've picked. A text box that a "lets them type" entry opened has to
+be filled in too, and spaces don't count. Whatever's missing gets marked in
+red and listed above the button, so an inquiry can never reach you with a gap
+in it, and no order can arrive carrying a default the buyer never looked at.
+
+That means there's no way to offer an optional extra as a dropdown. If
+something is genuinely take-it-or-leave-it, make "No thanks" one of the
+entries at +$0 — they still have to choose it, which is the point.
 
 **Sizes** are just a "pick one" group. The **+ Sizes** button makes one
 pre-filled with Small / Medium / Large so you only have to edit the prices.
 
 Switching the whole thing back off hides the options from your site but keeps
 the groups, so you can turn them on again later without rebuilding them.
+
+### The message box
+
+Every listing has an **Anything you want to say** box, whether or not it has
+options — nothing to switch on. It's optional, capped at 1,500 characters,
+and it carries through to the inquiry form so nobody has to retype it. It
+arrives as the message on the inquiry, same as before.
 
 > **Republish `firestore.rules` before you rely on this** (section 3). The
 > rules now have to let an inquiry carry the choices, and they got stricter
